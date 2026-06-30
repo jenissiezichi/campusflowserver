@@ -1,11 +1,12 @@
 import { configDotenv } from 'dotenv';
-import app from '../src/app.js';
 configDotenv();
 
-// const port = process.env.PORT || 5000;
+let app;
+try {
+    app = (await import('../src/app.js')).default;
+} catch (err) {
+    console.error("FATAL IMPORT ERROR:", err);
+    throw err;
+}
 
-// app.listen(port, () => {
-//   console.log(`Server running at http://localhost:${port}`);
-// });
-
-export default app
+export default app;

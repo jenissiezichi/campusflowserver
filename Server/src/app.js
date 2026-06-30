@@ -16,7 +16,7 @@ const isDev = process.env.NODE_ENV === 'development';
 app.use(globalRateLimiter);
 
 app.use(cors({
-  origin: isDev ? '*' : 'https://campusflow-mmt9.onrender.com',
+  origin: isDev ? '*' : 'https://campusflowserver-uc79.vercel.app',
   methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
   allowedHeaders: ['Content-Type', 'Authorization']
 }));

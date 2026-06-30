@@ -22,6 +22,7 @@ app.use(cors({
 }));
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
+app.set('trust proxy', 1);
 
 // Log all incoming requests on the server side console
 app.use((req, res, next) => {

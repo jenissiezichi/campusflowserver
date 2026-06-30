@@ -9,6 +9,7 @@ import authRoutes from './routes/auth.routes.js';
 import { globalRateLimiter } from './middlewares/rateLimiter.middleware.js'; 
 import solanaRoutes from './routes/solana.routes.js'
 import mainAlerts from './routes/main.alerts.js'
+import studentsRoutes from './routes/student.route.js'
 import adminRoutes from './routes/admin.routes.js';
 const app = express();
 const isDev = process.env.NODE_ENV === 'development';
@@ -16,7 +17,7 @@ const isDev = process.env.NODE_ENV === 'development';
 app.use(globalRateLimiter);
 
 app.use(cors({
-  origin: isDev ? '*' : 'https://campusflowserver-uc79.vercel.app',
+  origin: isDev ? '*' : process.env.FRONTEND_URL,
   methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
   allowedHeaders: ['Content-Type', 'Authorization']
 }));
@@ -35,9 +36,9 @@ passportLocalConfig(passport);
 app.use(passport.initialize());
 
 // Routes
-
 app.use('/', authRoutes);
-app.use('/', adminRoutes);
+app.use('/student', studentsRoutes);
+app.use('/admin', adminRoutes);
 app.use('/universities', solanaRoutes);
 app.use('/api', mainAlerts);
 

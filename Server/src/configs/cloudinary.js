@@ -18,10 +18,10 @@ const storage = new CloudinaryStorage({
     if (req.baseUrl.includes('admin') || req.body.uploadType === 'certificate') {
       folderPath = 'campus-flow/certificates';
     }
+    
     return {
       folder: folderPath,
       resource_type: 'auto',
-      format: file.mimetype.split('/')[1] === 'pdf' ? 'pdf' : undefined,
     };
   },
 });
@@ -40,5 +40,4 @@ export const uploadDocument = multer({
   storage,
   fileFilter,
   limits: { fileSize: 10 * 1024 * 1024 }
-
-})
+});

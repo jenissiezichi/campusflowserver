@@ -150,9 +150,10 @@ export const verifyGoogleSigninUser = (req, res, next) => {
     try {
       const token = generateToken(authorisedUser);
       const frontendURL = process.env.FRONTEND_URL || "http://localhost:5173";
-      return res.redirect(
-          `${frontendURL}/#/google-success?token=${encodeURIComponent(token)}&role=${authorisedUser.role}&isNewUser=${isNewUser}`
-      );
+      // UPDATED
+return res.redirect(
+    `${frontendURL}/#/google-success?token=${encodeURIComponent(token)}&isNewUser=${isNewUser}`
+);
     } catch (tokenError) {
       return res.status(500).json({
         message: 'Failed to generate access token',
@@ -178,4 +179,23 @@ export const getAllStudents = async (req, res) => {
     students
   })
 }
+
+export const completeProfile = async (req, res, next) => {
+  const { role, university } = req.body;
+  const userId = req.user.id;
+
+  if (!role || !university) {
+    return res.status(400).json({ message: 'Role and university are required.' });
+  }
+
+  try {
+    await pool.query(
+      'UPDATE users SET role = $1, university = $2 WHERE id = $3 RETURNING id, fullname, email, role, university',
+      [role, university, userId]
+    );
+    return res.status(200).json({ message: 'Profile completed successfully.' });
+  } catch (err) {
+    next(err);
+  }
+};
 

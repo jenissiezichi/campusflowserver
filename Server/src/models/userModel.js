@@ -50,6 +50,14 @@ class User {
     );
     return res.rows[0];
   }
+
+  static async updateProfile(id, role, university) {
+  const res = await pool.query(
+    'UPDATE users SET role = $1, university = $2 WHERE id = $3 RETURNING id, fullname, email, role, university',
+    [role, university, id]
+  );
+  return res.rows[0];
+}
 }
 
 export default User;

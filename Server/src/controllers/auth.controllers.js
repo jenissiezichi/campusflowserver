@@ -11,7 +11,7 @@ import Student from '../models/studentModel.js';
 // Helper function for token
 const generateToken = (user) => {
   return jwt.sign(
-    { id: user.id, fullname: user.fullname, role: user.role, universityId: user.university },
+    { id: user.id, fullname: user.fullname, role: user.role, universityId: user.university, matricNumber: user.matric_number },
     process.env.JWT_SECRET,
     { expiresIn: '24h' }
   );
@@ -55,7 +55,7 @@ if (!emailRegex.test(email)) {
     res.status(201).json({
       message: 'User registered successfully',
       token: `Bearer ${token}`,
-      user: { id: newUser.id, fullname: newUser.fullname, email: newUser.email, role: newUser.role, university: newUser.university },
+      user: { id: newUser.id, fullname: newUser.fullname, email: newUser.email, role: newUser.role, university: newUser.university, matric_number: newUser.matric_number }
     });
   } catch (err) {
     console.error('Registration error:', err);

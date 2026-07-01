@@ -21,6 +21,9 @@ router.post('/complete-profile', passport.authenticate('jwt', { session: false }
 // router.get('/students', passport.authenticate('jwt', { session: false }), getAllStudents);
 router.get('/students', getAllStudents);
 
+// rfreshes the sserver
+router.get('/health', (req, res)=>res.status(200).json({status: 'ok'}));
+
 
 export default router;
 

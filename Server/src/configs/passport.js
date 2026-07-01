@@ -44,7 +44,7 @@ export const passportOauthGoogleConfig = (passport) => {
   passport.use(new GoogleStrategy({
     clientID: process.env.GOOGLE_CLIENT_ID,
     clientSecret: process.env.GOOGLE_CLIENT_SECRET,
-    callbackURL: "https://campusflowserver.onrender.com/auth/google/callback",
+    callbackURL: "https://campusflowserver-uc79.vercel.app/auth/google/callback",
   }, async (accessToken, refreshToken, profile, done) => {
     try {
       const emailString = profile.emails && profile.emails.length > 0

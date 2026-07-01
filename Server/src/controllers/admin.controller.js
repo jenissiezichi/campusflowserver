@@ -6,7 +6,9 @@ export const createCertificate = async (req, res) => {
     if (!req.file) return res.status(400).json({ message: "No file provided" });
     const certificateUrl = req.file.path;
 
-    await Certificate.create();
+    
+
+    await Certificate.create(hash, studentId, studentName, certificateType, institution, universityId, timestamp, txSignature, pdaAddress);
 
     return res.status(200).json({
       message: "Certificate uploaded successfully!",

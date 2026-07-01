@@ -180,6 +180,8 @@ export const getAllStudents = async (req, res) => {
   })
 }
 
+
+
 export const completeProfile = async (req, res, next) => {
   const { role, university } = req.body;
   const userId = req.user.id;

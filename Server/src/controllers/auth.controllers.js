@@ -76,7 +76,7 @@ export const login = (req, res, next) => {
     return res.status(200).json({
       message: 'Logged in successfully',
       token: `Bearer ${token}`,
-      user: { id: user.id, email: user.email, role: user.role, university: user.university },
+      user: { id: user.id, email: user.email, role: user.role, university: user.university, matric_number: user.matric_number },
     });
   })(req, res, next);
 };
@@ -165,8 +165,8 @@ return res.redirect(
 
 export const getMe = (req, res) => {
   if (req.user) {
-    const { id, fullname, email } = req.user;
-    res.status(200).json({ user: { id, fullname, email } });
+    const { id, fullname, email, matric_number, department, university } = req.user;
+    res.status(200).json({ user: { id, fullname, email, matric_number, department,university } });
   } else {
     res.status(401).json({ message: 'Not authenticated' });
   }

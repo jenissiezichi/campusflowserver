@@ -29,6 +29,7 @@ export const passportLocalConfig = (passport) => {
     new JwtStrategy(opts, async (jwt_payload, done) => {
       try {
         const user = await User.findById(Number(jwt_payload.id));
+
         if (user) {
           return done(null, user);
         }

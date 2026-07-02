@@ -5,7 +5,7 @@ import { getClearanceStages } from "../controllers/student.controller.js";
 import authMiddleware from "../middlewares/rateLimiter.middleware.js";
 const router = Router();
 
-router.post('/upload-document', uploadDocument.single('document'), uploadStudentDocument);
+router.post('/upload-document',authMiddleware, uploadDocument.single('document'), uploadStudentDocument);
 
 router.get('/clearance-stages', authMiddleware, getClearanceStages);
 export default router;

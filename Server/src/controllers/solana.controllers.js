@@ -79,15 +79,15 @@ export const createIncidentReport = async (req, res) => {
         const incidentId = crypto.randomUUID();
         const timestamp = Math.floor(Date.now() / 1000);
 
-        // const chainResult = await reportIncident({
-        //     universityId,
-        //     studentId: studentId.toString(),
-        //     incidentId,
-        //     studentName,
-        //     latitude,
-        //     longitude,
-        //     description,
-        // });
+        const chainResult = await reportIncident({
+            universityId,
+            studentId: studentId.toString(),
+            incidentId,
+            studentName,
+            latitude,
+            longitude,
+            description,
+        });
 
       //  commented the chain writing out for now
 
@@ -139,14 +139,14 @@ export const getAllIncidents = async (req, res) => {
 
 export const createCertificate = async (req, res) => {
     try{
-        const {studentId, studentName, certificateType, institution} = req.body;
+        const {matric_number, studentName, certificateType, institution} = req.body;
         const universityId = req.user.university;
         const timestamp = Math.floor(Date.now() / 1000);
 
-        const hash = crypto.createHash('sha256').update(`${studentId}-${studentName}-${certificateType}-${institution}-${timestamp}`).digest('hex');
+        const hash = crypto.createHash('sha256').update(`${matric_number}-${studentName}-${certificateType}-${institution}-${timestamp}`).digest('hex');
    const chainResult = await issueCertificate({
        universityId,
-       studentId,
+       matric_number,
        studentName,
        certificateType,
        institution,
@@ -216,12 +216,12 @@ export const verifyCertificateController = async (req, res) => {
             return res.status(404).json({ success: false, message: "Certificate not found." });
         }
 
-        const { student_id, university_id } = certRecord;
+        const { matric_number, university_id } = certRecord;
 
         const chainResult = await verifyCertificate({
             documentHash: document_hash,
             verifierOrg: verifier_org,
-            studentId: student_id,
+            studentId: matric_number,
             universityId: university_id,
         });
 
@@ -254,7 +254,7 @@ export const revokeCertificateController = async (req, res) => {
                 }
         const chainResult = await revokeCertificate({
             hash,
-            studentId: certRecord.student_id,
+            studentId: certRecord.matric_number,
             universityId,
         });
                 const dbRecord = await Certificate.revoke(hash);

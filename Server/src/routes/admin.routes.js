@@ -16,6 +16,7 @@ import {
 } from '../controllers/solana.controllers.js'
 
 import authMiddleware from '../middlewares/auth.middleware.js'
+import { getAllStudents } from '../controllers/admin.controller.js';
 
 
 const router = express.Router();
@@ -28,7 +29,7 @@ router.post('/verify', authMiddleware, verifyCertificateController);
 
 router.patch('/certificate/revoke', authMiddleware, revokeCertificateController);
 
-router.get('/get_all_users', Admin.getAllUsers);
+router.get('/get_all_users', authMiddleware, getAllStudents);
 router.get('/certificate', authMiddleware, getAllCertificate);
 router.get('/certificate/:id', authMiddleware, getCertificateById);
 router.get('/verify', authMiddleware, verifyCertificateController);

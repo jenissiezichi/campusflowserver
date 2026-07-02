@@ -1,5 +1,6 @@
 import CloudinaryModel from '../models/cloudinaryModel.js';
 import Certificate from '../models/Certificate.js';
+import Admin from '../models/admin.model.js';
 
 export const createCertificate = async (req, res) => {
   try {
@@ -18,3 +19,17 @@ export const createCertificate = async (req, res) => {
     })
   }
 }
+
+export const getAllStudents = async (req, res) => {
+  try {
+    const students = await Admin.getAllStudents(req.user.universityId);
+    return res.status(200).json({
+      message: "All students retrieved successfully",
+      students
+    });
+  } catch (error) {
+    return res.status(500).json({
+      message: error.message
+    });
+  }
+};

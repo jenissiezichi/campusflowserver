@@ -15,6 +15,3 @@ export const transporter = nodemailer.createTransport({
     rejectUnauthorized: false
   }
 });
-
-// SMTP_USER=prayskeyo@gmail.com
-// SMTP_PASS=UZ0JcjmF9fVI1zRk

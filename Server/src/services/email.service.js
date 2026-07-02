@@ -113,7 +113,7 @@ export const sendEmail = async (to, templateName, data) => {
   const { subject, html } = templates[templateName](data);
 
   await transporter.sendMail({
-    from: `"Campus Flow" <${process.env.SMTP_USER}>`,
+    from: `"Campus Flow" <${process.env.SMTP_FROM}>`,
     to, subject, html
   })
 }

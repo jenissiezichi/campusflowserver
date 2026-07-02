@@ -35,9 +35,9 @@ export const register = async (req, res, next) => {
   //   })
   // }
   const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-if (!emailRegex.test(email)) {
+  if (!emailRegex.test(email)) {
     return res.status(400).json({ message: 'Invalid email format.' });
-}
+  }
 
   try {
     let user = await User.findByEmail(email);
@@ -150,9 +150,9 @@ export const verifyGoogleSigninUser = (req, res, next) => {
       const token = generateToken(authorisedUser);
       const frontendURL = process.env.FRONTEND_URL || "http://localhost:5173";
       // UPDATED
-return res.redirect(
-    `${frontendURL}/#/google-success?token=${encodeURIComponent(token)}&isNewUser=${isNewUser}`
-);
+      return res.redirect(
+        `${frontendURL}/#/google-success?token=${encodeURIComponent(token)}&isNewUser=${isNewUser}`
+      );
     } catch (tokenError) {
       return res.status(500).json({
         message: 'Failed to generate access token',
@@ -165,7 +165,7 @@ return res.redirect(
 export const getMe = (req, res) => {
   if (req.user) {
     const { id, fullname, email, matric_number, department, university } = req.user;
-    res.status(200).json({ user: { id, fullname, email, matric_number, department,university } });
+    res.status(200).json({ user: { id, fullname, email, matric_number, department, university } });
   } else {
     res.status(401).json({ message: 'Not authenticated' });
   }

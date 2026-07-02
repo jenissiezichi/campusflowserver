@@ -1,5 +1,6 @@
 import CloudinaryModel from '../models/cloudinaryModel.js';
 import Certificate from '../models/Certificate.js';
+import Admin from '../models/admin.model.js';
 
 export const createCertificate = async (req, res) => {
   try {
@@ -18,3 +19,17 @@ export const createCertificate = async (req, res) => {
     })
   }
 }
+
+export const getStudentsByYear = async (req, res) => {
+  try {
+    const { year } = req.query;
+    const universityId = req.user.universityId;
+
+    if (!year) return res.status(400).json({ message: "Year is required." });
+
+    const students = await Admin.getStudentsByYear(universityId, year);
+    return res.status(200).json({ students });
+  } catch (err) {
+    return res.status(500).json({ message: err.message });
+  }
+};

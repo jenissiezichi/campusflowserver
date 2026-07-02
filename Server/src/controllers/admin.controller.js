@@ -20,6 +20,7 @@ export const createCertificate = async (req, res) => {
   }
 }
 
+
 export const getStudentsByYear = async (req, res) => {
   try {
     const { year } = req.query;

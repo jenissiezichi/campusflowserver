@@ -24,37 +24,65 @@ export const register = async (req, res, next) => {
     return res.status(400).json({ message: 'Fields not completely filled.' });
   }
 
-  // const result = await validate({ email });
+  const ALLOWED_ROLES = ['student', 'lecturer', 'admin']; // adjust to your actual roles
+  if (!ALLOWED_ROLES.includes(role)) {
+    return res.status(400).json({ message: 'Invalid role.' });
+  }
 
-  // console.log(result);
-  // console.log(email)
-
-  // if (!result.valid) {
-  //   return res.json({
-  //     message: `Email is NOT valid`
-  //   })
-  // }
-  const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-  if (!emailRegex.test(email)) {
-    return res.status(400).json({ message: 'Invalid email format.' });
+  if (password.length < 8) {
+    return res.status(400).json({ message: 'Password must be at least 8 characters.' });
   }
 
   try {
-    let user = await User.findByEmail(email);
-    if (user) {
-      return res.status(400).json({ message: 'User with email already exists' });
+    const result = await validate({
+      email,
+      validateRegex: true,
+      validateMx: true,
+      validateTypo: true,
+      validateDisposable: true,
+      validateSMTP: false,
+    });
+
+    if (!result.valid) {
+      return res.status(422).json({
+        message: 'Email is not valid',
+        reason: result.reason,
+      });
     }
+
+    const user = await User.findByEmail(email);
+    if (user) {
+      return res.status(409).json({ message: 'User with email already exists' });
+    }
+
     const salt = await bcrypt.genSalt(10);
     const passwordHash = await bcrypt.hash(password, salt);
-    const newUser = await User.create(fullname.toLowerCase(), email.toLowerCase(), role, university, passwordHash);
+
+    let newUser;
+    try {
+      newUser = await User.create(fullname.toLowerCase(), email.toLowerCase(), role, university, passwordHash);
+    } catch (dbErr) {
+      if (dbErr.code === '23505') { // Postgres unique_violation — adjust for your DB
+        return res.status(409).json({ message: 'User with email already exists' });
+      }
+      throw dbErr;
+    }
+
     const token = generateToken(newUser);
 
-    // send a welcome email to the newly registered user
     sendEmail(email, "welcome", fullname).catch(err => console.error("Welcome email failed:", err));
+
     res.status(201).json({
       message: 'User registered successfully',
       token: `Bearer ${token}`,
-      user: { id: newUser.id, fullname: newUser.fullname, email: newUser.email, role: newUser.role, university: newUser.university, matric_number: newUser.matric_number }
+      user: {
+        id: newUser.id,
+        fullname: newUser.fullname,
+        email: newUser.email,
+        role: newUser.role,
+        university: newUser.university,
+        matric_number: newUser.matric_number
+      }
     });
   } catch (err) {
     console.error('Registration error:', err);

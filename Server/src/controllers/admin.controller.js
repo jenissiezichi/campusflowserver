@@ -20,6 +20,20 @@ export const createCertificate = async (req, res) => {
   }
 }
 
+export const getAllStudents = async (req, res) => {
+  try {
+    const students = await Admin.getAllStudents(req.user.universityId);
+    return res.status(200).json({
+      message: "All students retrieved successfully",
+      students
+    });
+  } catch (error) {
+    return res.status(500).json({
+      message: error.message
+    });
+  }
+};
+
 export const getStudentsByYear = async (req, res) => {
   try {
     const { year } = req.query;

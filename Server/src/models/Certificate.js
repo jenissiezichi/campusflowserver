@@ -1,12 +1,12 @@
 import pool from '../configs/db.js'
 
 class Certificate {
-    static async create({ hash, studentId, studentName, certificateType, matricNumber, institution, universityId, timestamp, txSignature, pdaAddress, certificateUrl }) {
+    static async create({ hash, matricNumber, studentName, certificateType, institution, universityId, timestamp, txSignature, pdaAddress, certificateUrl }) {
         const res = await pool.query(
-            `INSERT INTO certificates ( hash, student_id, student_name, certificate_type, matric_number, institution, university_id, timestamp, is_valid, tx_signature, pda_address, certificate_url)
+            `INSERT INTO certificates ( hash, matric_number, student_name, certificate_type, matric_number, institution, university_id, timestamp, is_valid, tx_signature, pda_address, certificate_url)
 VALUES($1, $2, $3, $4, $5, $6, $7, $8, true,$9, $10, $11)
 RETURNING *`,
-            [hash, studentId, studentName, certificateType, matricNumber, institution, universityId, timestamp, txSignature, pdaAddress, certificateUrl]
+            [hash,matricNumber, studentName, certificateType, institution, universityId, timestamp, txSignature, pdaAddress, certificateUrl]
         );
         return res.rows[0];
     }

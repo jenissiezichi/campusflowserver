@@ -1,4 +1,4 @@
-import { registerUniversity,getAllUniversities } from "../services/solanaService.js"
+import { registerUniversity, getAllUniversities } from "../services/solanaService.js"
 
 import University from "../models/University.js";
 import { fetchAllIncidents } from "../services/solanaService.js"
@@ -141,186 +141,184 @@ export const getAllIncidents = async (req, res) => {
 
 
 
-        export const createCertificate = async (req, res) => {
-            try {
-                const { studentName, certificateType, institution} = req.body;
+export const createCertificate = async (req, res) => {
+    try {
+        const { studentName, certificateType, institution } = req.body;
 
-                const universityId = req.user.universityId;
-                const matricNumber = req.user.matricNumber;
-                const certificateUrl = req.file.path;
-                const timestamp = Math.floor(Date.now() / 1000);
-                const hash = crypto
-                    .createHash('md5')
-                    .update(`${matricNumber}-${studentName}-${certificateType}-${institution}-${timestamp}`)
-                    .digest('hex');
+        const universityId = req.user.universityId;
+        const matricNumber = req.user.matricNumber;
+        const certificateUrl = req.file.path;
+        const timestamp = Math.floor(Date.now() / 1000);
+        const hash = crypto
+            .createHash('md5')
+            .update(`${matricNumber}-${studentName}-${certificateType}-${institution}-${timestamp}`)
+            .digest('hex');
 
-                const chainResult = await issueCertificate({
-                    universityId,
-                    studentId:matricNumber,
-                    studentName,
-                    certificateType,
-                    institution,
-                    hash,
-                });
+        const chainResult = await issueCertificate({
+            universityId,
+            studentId: matricNumber,
+            studentName,
+            certificateType,
+            institution,
+            hash,
+        });
 
-                const dbRecord = await Certificate.create({
-                    hash,
-                    studentName,
-                    certificateType,
-                    matricNumber,
-                    institution,
-                    universityId,
-                    certificateUrl,
-                    timestamp,
-                    txSignature: chainResult.tx,
-                    pdaAddress: chainResult.certificatePDA,
-                });
+        const dbRecord = await Certificate.create({
+            hash,
+            studentName,
+            certificateType,
+            matricNumber,
+            institution,
+            universityId,
+            certificateUrl,
+            timestamp,
+            txSignature: chainResult.tx,
+            pdaAddress: chainResult.certificatePDA,
+        });
 
-                res.status(201).json({
-                    success: true,
-                    message: "Certificate Processed Successfully.",
-                    database: dbRecord,
-                    chain: chainResult
-                });
+        res.status(201).json({
+            success: true,
+            message: "Certificate Processed Successfully.",
+            database: dbRecord,
+            chain: chainResult
+        });
 
-            } catch (err) {
-                res.status(500).json({success: false, message: err.message});
-            }
-        };
+    } catch (err) {
+        res.status(500).json({ success: false, message: err.message });
+    }
+};
 
 
-        export const getAllCertificate = async (req, res) => {
-            try {
-                const universityId = req.user.university;
-                const dbCert = await Certificate.findAllCertificates(universityId);
-                const chainCert = await givemeCertificate(universityId);
+export const getAllCertificate = async (req, res) => {
+    try {
+        const universityId = req.user.university;
+        const dbCert = await Certificate.findAllCertificates(universityId);
+        const chainCert = await givemeCertificate(universityId);
 
-                res.status(200).json({
-                    success: true,
-                    count: dbCert.length,
-                    db: dbCert,
-                    chain: chainCert,
-                });
-            } catch (err) {
-                res.status(500).json({success: false, message: err.message,});
-            }
+        res.status(200).json({
+            success: true,
+            count: dbCert.length,
+            db: dbCert,
+            chain: chainCert,
+        });
+    } catch (err) {
+        res.status(500).json({ success: false, message: err.message, });
+    }
+}
+
+export const getCertificateById = async (req, res) => {
+    try {
+        const { id } = req.params;
+        const dbCert = await Certificate.findByCertificateId(id);
+        const chainCert = null;
+
+        res.status(200).json({
+            success: true,
+            db: dbCert,
+            chain: dbCert,
+        });
+    } catch (err) {
+        res.status(500).json({ success: false, message: err.message, });
+    }
+}
+
+export const verifyCertificateController = async (req, res) => {
+    try {
+        const { document_hash, verifier_org } = req.body;
+        const verifierId = req.user.id;
+        const timestamp = Math.floor(Date.now() / 1000);
+
+        const certRecord = await Certificate.findByHash(document_hash);
+        if (!certRecord) {
+            return res.status(404).json({ success: false, message: "Certificate not found." });
         }
 
+        const { matric_number, university_id } = certRecord;
 
-        export const getCertificateById = async (req, res) => {
-            try {
-                const {id} = req.params;
-                const dbCert = await Certificate.findByCertificateId(id);
-                const chainCert = null;
+        const chainResult = await verifyCertificate({
+            documentHash: document_hash,
+            verifierOrg: verifier_org,
+            studentId: matric_number,
+            universityId: university_id,
+        });
 
-                res.status(200).json({
-                    success: true,
-                    db: dbCert,
-                    chain: dbCert,
-                });
-            } catch (err) {
-                res.status(500).json({success: false, message: err.message,});
-            }
+        const dbRecord = await VerificationRecord.create({
+            documentHash: document_hash,
+            verifierOrg: verifier_org,
+            verifierId,
+            universityId: university_id,
+            timestamp,
+            txSignature: chainResult.tx,
+            pdaAddress: chainResult.verificationPDA,
+        });
+
+        res.status(201).json({
+            success: true,
+            message: "Certificate verified successfully.",
+            certificate: certRecord,
+            verification: dbRecord,
+            chain: chainResult
+        });
+    } catch (err) {
+        res.status(500).json({ success: false, message: err.message });
+    }
+};
+
+export const revokeCertificateController = async (req, res) => {
+    try {
+        const { hash } = req.body;
+        const universityId = req.user.university;
+        const certRecord = await Certificate.findByHash(hash);
+        if (!certRecord) {
+            return res.status(404).json({ success: false, message: "Certificate not found" });
         }
-
-
-        export const verifyCertificateController = async (req, res) => {
-            try {
-                const {document_hash, verifier_org} = req.body;
-                const verifierId = req.user.id;
-                const timestamp = Math.floor(Date.now() / 1000);
-
-                const certRecord = await Certificate.findByHash(document_hash);
-                if (!certRecord) {
-                    return res.status(404).json({success: false, message: "Certificate not found."});
-                }
-
-                const {matric_number, university_id} = certRecord;
-
-                const chainResult = await verifyCertificate({
-                    documentHash: document_hash,
-                    verifierOrg: verifier_org,
-                    studentId: matric_number,
-                    universityId: university_id,
-                });
-
-                const dbRecord = await VerificationRecord.create({
-                    documentHash: document_hash,
-                    verifierOrg: verifier_org,
-                    verifierId,
-                    universityId: university_id,
-                    timestamp,
-                    txSignature: chainResult.tx,
-                    pdaAddress: chainResult.verificationPDA,
-                });
-
-                res.status(201).json({
-                    success: true,
-                    message: "Certificate verified successfully.",
-                    certificate: certRecord,
-                    verification: dbRecord,
-                    chain: chainResult
-                });
-            } catch (err) {
-                res.status(500).json({success: false, message: err.message});
-            }
-        };
-
-        export const revokeCertificateController = async (req, res) => {
-            try {
-                const {hash} = req.body;
-                const universityId = req.user.university;
-                const certRecord = await Certificate.findByHash(hash);
-                if (!certRecord) {
-                    return res.status(404).json({success: false, message: "Certificate not found"});
-                }
-                if (certRecord.university_id !== universityId) {
-                    return res.status(403).json({success: false, message: "Unauthorized"});
-                }
-                const chainResult = await revokeCertificate({
-                    hash,
-                    studentId: certRecord.matric_number,
-                    universityId,
-                });
-                const dbRecord = await Certificate.revoke(hash);
-                res.status(200).json({
-                    success: true,
-                    message: 'Certificate was revoked successfully',
-                    data: dbRecord,
-                    chain: chainResult
-                });
-            } catch (err) {
-                res.status(500).json({success: false, message: err.message});
-            }
+        if (certRecord.university_id !== universityId) {
+            return res.status(403).json({ success: false, message: "Unauthorized" });
         }
+        const chainResult = await revokeCertificate({
+            hash,
+            studentId: certRecord.matric_number,
+            universityId,
+        });
+        const dbRecord = await Certificate.revoke(hash);
+        res.status(200).json({
+            success: true,
+            message: 'Certificate was revoked successfully',
+            data: dbRecord,
+            chain: chainResult
+        });
+    } catch (err) {
+        res.status(500).json({ success: false, message: err.message });
+    }
+}
 
-        export const getVerificationRecords = async (req, res) => {
-            try {
-                const universityId = req.user.university;
-                const chain = await fetchAllVerification();
-                const records = await VerificationRecord.findByUniversity(universityId);
-                res.status(200).json({success: true, count: records.length, db: records, chaindb: chain});
-            } catch (err) {
-                res.status(500).json({success: false, message: err.message});
-            }
+export const getVerificationRecords = async (req, res) => {
+    try {
+        const universityId = req.user.university;
+        const chain = await fetchAllVerification();
+        const records = await VerificationRecord.findByUniversity(universityId);
+        res.status(200).json({ success: true, count: records.length, db: records, chaindb: chain });
+    } catch (err) {
+        res.status(500).json({ success: false, message: err.message });
+    }
+}
+
+export const getVerificationByHash = async (req, res) => {
+    try {
+        const { hash } = req.params;
+        const universityId = req.user.university;
+
+        const records = await VerificationRecord.findByHash(hash);
+        if (!records.length) {
+            return res.status(404).json({ success: false, message: "No verification found" });
         }
-
-        export const getVerificationByHash = async (req, res) => {
-            try {
-                const {hash} = req.params;
-                const universityId = req.user.university;
-
-                const records = await VerificationRecord.findByHash(hash);
-                if (!records.length) {
-                    return res.status(404).json({success: false, message: "No verification found"});
-                }
-                if (records[0].university_id !== universityId) {
-                    return res.status(403).json({success: false, message: "Unauthorized"});
-                }
-                res.status(200).json({success: true, count: records.length, db: records});
-
-            } catch (err) {
-                res.status(500).json({success: false, message: err.message});
-            }
+        if (records[0].university_id !== universityId) {
+            return res.status(403).json({ success: false, message: "Unauthorized" });
         }
+        res.status(200).json({ success: true, count: records.length, db: records });
+
+    } catch (err) {
+        res.status(500).json({ success: false, message: err.message });
+    }
+}
 

@@ -23,15 +23,4 @@ routes.get('/', fetchAllUniversity);
 routes.post('/incidents', authMiddleware, createIncidentReport);
 routes.get('/incidents', authMiddleware, getAllIncidents);
 
-// routes.post('/upload-certificate', authMiddleware, uploadDocument.single('certificate'), createCertificate);
-// routes.get('/certificate', authMiddleware, getAllCertificate);
-// routes.get('/certificate/:id', authMiddleware, getCertificateById);
-// routes.post('/verify', authMiddleware, verifyCertificateController);
-// routes.patch('/certificate/revoke', authMiddleware, revokeCertificateController);
-
-routes.get('/verify', authMiddleware, verifyCertificateController);
-routes.get('/record/verify', authMiddleware, getVerificationRecords);
-routes.get('/records/:hash', authMiddleware, getVerificationByHash);
-
-
 export default routes;

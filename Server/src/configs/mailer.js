@@ -6,12 +6,16 @@ configDotenv();
 const isDev = process.env.NODE_ENV === 'development';
 
 export const transporter = nodemailer.createTransport({
-  service: 'gmail',
-port: 587,
+  host: '://brevo.com',
+  port: 587,
+  secure: false,
   auth: {
-    user: process.env.GMAIL_USER,
-    pass: process.env.GMAIL_APP_PASS
+    // user: process.env.GMAIL_USER,
+    user: "b08066001@smtp-brevo.com",
+    pass: "UZ0JcjmF9fVI1zRk"
+    // pass: process.env.GMAIL_APP_PASS
   },
-  // Allow unauthorized connections during development mode
-  tls: isDev ? { rejectUnauthorized: false } : undefined
+  tls: {
+    rejectUnauthorized: false 
+  }
 });

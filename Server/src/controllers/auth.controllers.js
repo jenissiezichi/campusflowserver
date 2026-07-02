@@ -19,7 +19,6 @@ const generateToken = (user) => {
 
 export const register = async (req, res, next) => {
   const { fullname, email, role, university, password } = req.body;
-  console.log(req.body)
 
   if (!fullname || !email || !role || !university || !password) {
     return res.status(400).json({ message: 'Fields not completely filled.' });

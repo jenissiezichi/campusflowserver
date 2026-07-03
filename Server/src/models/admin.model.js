@@ -6,19 +6,26 @@ class Admin {
     return res.rows;
   }
 
-  static async getStudentsByYear(universityId, year) {
-    const shortYear = year.slice(-2);
-    const res = await pool.query(
-        `SELECT id, fullname, email, matric_number, department 
+    static async getStudentsByLevel(universityId, level) {
+        const res = await pool.query(
+            `SELECT id, fullname, email, matric_number, department, academic_level 
          FROM users 
          WHERE university = $1 
          AND role = 'student'
-         AND matric_number LIKE $2
-         ORDER BY matric_number ASC`,
-        [universityId, `%/${shortYear}/%`]
-    );
-    return res.rows;
-  }
+         AND academic_level = $2
+         ORDER BY fullname ASC`,
+            [universityId, level]
+        );
+        return res.rows;
+    }
+
+    static async findByMatricNumber(matricNumber) {
+        const res = await pool.query(
+            `SELECT * FROM certificates WHERE matric_number = $1 ORDER BY created_at DESC`,
+            [matricNumber]
+        );
+        return res.rows; // returns array — student may have multiple certificates
+    }
 }
 
 export default Admin;

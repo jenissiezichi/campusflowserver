@@ -19,18 +19,38 @@ export const createCertificate = async (req, res) => {
     })
   }
 }
-
-
-export const getStudentsByYear = async (req, res) => {
+export const getAllStudents = async (req, res) => {
   try {
-    const { year } = req.query;
+    const students = await Admin.getAllStudent(req.user.universityId);
+    return res.status(200).json({
+      message: "All students retrieved successfully",
+      students
+    });
+  } catch (error) {
+    return res.status(500).json({
+      message: error.message
+    });
+  }
+};
+
+export const getStudentsByLevel = async (req, res) => {
+  try {
+    const { level } = req.query;
     const universityId = req.user.universityId;
-
-    if (!year) return res.status(400).json({ message: "Year is required." });
-
-    const students = await Admin.getStudentsByYear(universityId, year);
+    if (!level) return res.status(400).json({ message: "Level is required." });
+    const students = await Admin.getStudentsByLevel(universityId, level);
     return res.status(200).json({ students });
   } catch (err) {
     return res.status(500).json({ message: err.message });
+  }
+};
+
+export const getCertificateByMatric = async (req, res) => {
+  try {
+    const { matric_number } = req.params;
+    const certs = await Admin.findByMatricNumber(matric_number);
+    res.status(200).json({ success: true, certificates: certs });
+  } catch (err) {
+    res.status(500).json({ success: false, message: err.message });
   }
 };

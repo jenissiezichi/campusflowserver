@@ -1,9 +1,11 @@
 import express from "express";
 import { sendAlert } from "./alerta.js";
+import {createIncidentReport} from '../controllers/solana.controllers.js'
+import authMiddleware from '../middlewares/auth.middleware.js';
 
 export const alerts = async (req, res) => {
     try {
-        const { latitude, longitude } = req.body;   // ← channelRef removed from here
+        const { latitude, longitude, locationText } = req.body;   // ← channelRef removed from here
         const mapsLink = `https://www.google.com/maps?q=${latitude},${longitude}`;
         const timestamp = new Date().toLocaleString("en-NG", {
             timeZone: "Africa/Lagos",
@@ -13,6 +15,7 @@ export const alerts = async (req, res) => {
         const message = `
 🚨 EMERGENCY ALERT 🚨
 I need help!
+📍Location :${locationText || 'See map link'}
 📍 My live location:
 ${mapsLink}
 📅 Timestamp: ${timestamp}
@@ -59,7 +62,12 @@ ${mapsLink}
             message,
             channelRef: process.env.ALERTA_CHANNEL_REF,
         });
-        res.json({ success: true, message: "Report sent", data: result });
+        req.body.category = category
+        req.body.locationText = locationText
+        req.body.description = description
+        req.body.latitude = latitude
+        req.body.longitude = longitude
+        await createIncidentReport(req, res)
     } catch (err) {
         res.status(500).json({ success: false, error: err.message });
     }
@@ -67,6 +75,6 @@ ${mapsLink}
 
 
 const alertRoute = express.Router();
-alertRoute.post("/telegram/send", alerts);
-alertRoute.post("/telegram/report", reports);
+alertRoute.post("/telegram/send",authMiddleware, alerts);
+alertRoute.post("/telegram/report", authMiddleware , reports);
 export default alertRoute;

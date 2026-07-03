@@ -22,4 +22,10 @@ class Clearance{
     );
     return res.rows[0];
   }
+
+  static async getAll(universityId) {
+    const res = await pool.query('SELECT * FROM clearance_records WHERE university_id = $1', [universityId]);
+    return res.rows;
+  }
+
 }export default Clearance;

@@ -73,7 +73,7 @@ export const fetchAllUniversity = async (req, res) => {
 export const createIncidentReport = async (req, res) => {
     try {
         const { category, locationText, description, latitude, longitude } = req.body;
-        const studentId = req.user.id;
+        const matric_number = req.user.matricNumber;
         const studentName = req.user.fullname;
         const universityId = req.user.university;
         const incidentId = crypto.randomUUID();
@@ -93,7 +93,7 @@ export const createIncidentReport = async (req, res) => {
 
         const dbRecord = await Incident.create({
             incidentId,
-            studentId,
+            matric_number,
             studentName,
             category,
             locationText,

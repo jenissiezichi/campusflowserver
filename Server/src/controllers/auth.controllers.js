@@ -1,5 +1,6 @@
 import bcrypt from 'bcrypt';
 import passport from 'passport';
+import pool from '../configs/db.js'
 import jwt from 'jsonwebtoken';
 import { validate } from 'deep-email-validator'
 import User from '../models/userModel.js';

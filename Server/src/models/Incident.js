@@ -2,15 +2,15 @@ import pool from '../configs/db.js'
  class Incident {
 
 
-     static async create({incidentId, studentId, studentName, category, locationText, latitude,
+     static async create({incidentId, matric_number, studentName, category, locationText, latitude,
                              longitude, description, universityId, timestamp, txSignature, pdaAddress
                                  }) {
          const res = await pool.query(
              `INSERT INTO incidents
-             (incident_id, student_id, student_name, category, location_text, latitude, longitude, description, university_id, timestamp, tx_signature, pda_address)
+             (incident_id, matric_number, student_name, category, location_text, latitude, longitude, description, university_id, timestamp, tx_signature, pda_address)
              VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12)
              RETURNING *`,
-             [incidentId, studentId, studentName, category, locationText, latitude, longitude, description, universityId, timestamp, txSignature, pdaAddress]
+             [incidentId, matric_number, studentName, category, locationText, latitude, longitude, description, universityId, timestamp, txSignature, pdaAddress]
          );
          return res.rows[0];
      }

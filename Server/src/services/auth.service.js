@@ -52,3 +52,12 @@ export const resetPasswordWithOTP = async (email, otp, newPassword) => {
 
   return { success: true };
 };
+export const verifyResetOTP = async (email, otp) => {
+  const user = await User.findResetDataByEmail(email);
+  if (!user || !user.reset_otp || user.reset_otp !== otp) {
+    throw new Error('Invalid OTP');
+  }
+  if(isOTPExpired(user.reset_otp_expires)) {
+    throw new Error('OTP expired');
+  }
+}

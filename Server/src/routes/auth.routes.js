@@ -1,6 +1,18 @@
 import express from 'express';
 import passport from 'passport';
-import { register, login, logout, forgotPassword, resetPassword, getMe, loadGoogleConcentScreen, verifyGoogleSigninUser, getAllStudents,completeProfile } from '../controllers/auth.controllers.js';
+import {
+    register,
+    login,
+    logout,
+    forgotPassword,
+    resetPassword,
+    getMe,
+    loadGoogleConcentScreen,
+    verifyGoogleSigninUser,
+    getAllStudents,
+    completeProfile,
+    verifyOtp
+} from '../controllers/auth.controllers.js';
 import { authRateLimiter, passwordResetRateLimiter } from '../middlewares/rateLimiter.middleware.js';
 
 const router = express.Router();
@@ -11,6 +23,7 @@ router.post('/login', authRateLimiter, login);
 
 // Strict otp management for password reset.
 router.post('/forgot-password', passwordResetRateLimiter, forgotPassword);
+router.post('/verify-otp', verifyOtp);
 router.post('/reset-password', passwordResetRateLimiter, resetPassword);
 
 router.get('/logout', logout);

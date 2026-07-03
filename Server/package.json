@@ -29,7 +29,8 @@
     "passport-google-oauth2": "^0.2.0",
     "passport-jwt": "^4.0.1",
     "passport-local": "^1.0.0",
-    "pg": "^8.13.1"
+    "pg": "^8.13.1",
+    "resend": "^6.16.0"
   },
   "devDependencies": {
     "nodemon": "^3.1.9",

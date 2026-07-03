@@ -5,7 +5,7 @@ import jwt from 'jsonwebtoken';
 import { validate } from 'deep-email-validator'
 import User from '../models/userModel.js';
 import { transporter } from '../configs/mailer.js';
-import { requestPasswordReset, resetPasswordWithOTP } from '../services/auth.service.js';
+import { requestPasswordReset, resetPasswordWithOTP, verifyResetOTP } from '../services/auth.service.js';
 import { sendEmail } from '../services/email.service.js';
 import Student from '../models/studentModel.js';
 
@@ -38,7 +38,7 @@ export const register = async (req, res, next) => {
     const result = await validate({
       email,
       validateRegex: true,
-      validateMx: true,
+      validateMx: false,
       validateTypo: true,
       validateDisposable: true,
       validateSMTP: false,
@@ -173,7 +173,7 @@ export const verifyGoogleSigninUser = (req, res, next) => {
       isNewUser = true;
     }
     // send a welcome email to the newly registered user
-    if (isNewUser) await sendEmail(user.email, "welcome", user.fullname);
+    if (isNewUser) sendEmail(user.email, "welcome", user.fullname).catch(err => console.error("Welcome email failed:", err));
 
     try {
       const token = generateToken(authorisedUser);
@@ -228,4 +228,18 @@ export const completeProfile = async (req, res, next) => {
     next(err);
   }
 };
+
+export const verifyOtp = async (req, res, next) => {
+  const {email,otp}=req.body;
+  if(!email || !otp)
+    return res.status(400).json({ message: 'Email and OTP are required.' });
+  try{
+    await verifyResetOTP(email,otp);
+    return res.status(200).json({
+      message: 'OTP verified successfully.'
+    })
+  }catch(err){
+    return res.status(400).json({ message: err.message || 'Failed to verify OTP.' });
+  }
+}
 

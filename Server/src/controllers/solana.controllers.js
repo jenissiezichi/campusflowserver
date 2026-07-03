@@ -79,15 +79,15 @@ export const createIncidentReport = async (req, res) => {
         const incidentId = crypto.randomUUID();
         const timestamp = Math.floor(Date.now() / 1000);
 
-        const chainResult = await reportIncident({
-            universityId,
-            studentId: studentId.toString(),
-            incidentId,
-            studentName,
-            latitude,
-            longitude,
-            description,
-        });
+        // const chainResult = await reportIncident({
+        //     universityId,
+        //     studentId: studentId.toString(),
+        //     incidentId,
+        //     studentName,
+        //     latitude,
+        //     longitude,
+        //     description,
+        // });
 
         //  commented the chain writing out for now
 

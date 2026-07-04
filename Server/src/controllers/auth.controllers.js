@@ -219,11 +219,13 @@ export const completeProfile = async (req, res, next) => {
   }
 
   try {
-    await pool.query(
-      'UPDATE users SET role = $1, university = $2 WHERE id = $3 RETURNING id, fullname, email, role, university',
-      [role, university, userId]
-    );
-    return res.status(200).json({ message: 'Profile completed successfully.' });
+    const updatedUser = await User.updateProfile(userId, role, university);
+    const token = generateToken(updatedUser);
+    return res.status(200).json({
+      message: 'Profile completed successfully.',
+      token: `Bearer ${token}`,
+      user: updatedUser
+    });
   } catch (err) {
     next(err);
   }

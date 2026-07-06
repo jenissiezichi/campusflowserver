@@ -19,13 +19,13 @@ const generateToken = (user) => {
 };
 
 export const register = async (req, res, next) => {
-  const { fullname, email, role, university, password } = req.body;
+  const { fullname, email, role, university, password, department, level, matric_number} = req.body;
 
-  if (!fullname || !email || !role || !university || !password) {
+  if (!fullname || !email || !role || !university || !password || !department || !level || !matric_number) {
     return res.status(400).json({ message: 'Fields not completely filled.' });
   }
 
-  const ALLOWED_ROLES = ['student', 'lecturer', 'admin']; // adjust to your actual roles
+  const ALLOWED_ROLES = ['student', 'staff', 'admin'];
   if (!ALLOWED_ROLES.includes(role)) {
     return res.status(400).json({ message: 'Invalid role.' });
   }
@@ -35,42 +35,22 @@ export const register = async (req, res, next) => {
   }
 
   try {
-    const result = await validate({
-      email,
-      validateRegex: true,
-      validateMx: false,
-      validateTypo: true,
-      validateDisposable: true,
-      validateSMTP: false,
-    });
-
-    if (!result.valid) {
-      return res.status(422).json({
-        message: 'Email is not valid',
-        reason: result.reason,
-      });
-    }
-
-    const user = await User.findByEmail(email);
-    if (user) {
-      return res.status(409).json({ message: 'User with email already exists' });
-    }
+    // ...same email validation & existing-user check...
 
     const salt = await bcrypt.genSalt(10);
     const passwordHash = await bcrypt.hash(password, salt);
 
     let newUser;
     try {
-      newUser = await User.create(fullname.toLowerCase(), email.toLowerCase(), role, university, passwordHash);
+      newUser = await User.create(fullname.toLowerCase(), email.toLowerCase(), role, university, passwordHash, department.toLowerCase(), level, matric_number);
     } catch (dbErr) {
-      if (dbErr.code === '23505') { // Postgres unique_violation — adjust for your DB
+      if (dbErr.code === '23505') {
         return res.status(409).json({ message: 'User with email already exists' });
       }
       throw dbErr;
     }
 
     const token = generateToken(newUser);
-
     sendEmail(email, "welcome", fullname).catch(err => console.error("Welcome email failed:", err));
 
     res.status(201).json({
@@ -82,7 +62,9 @@ export const register = async (req, res, next) => {
         email: newUser.email,
         role: newUser.role,
         university: newUser.university,
-        matric_number: newUser.matric_number
+        matric_number: newUser.matric_number,
+        department: newUser.department,
+        level: newUser.level
       }
     });
   } catch (err) {

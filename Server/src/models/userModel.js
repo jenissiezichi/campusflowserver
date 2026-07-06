@@ -1,10 +1,10 @@
 import pool from '../configs/db.js';
 
 class User {
-  static async create(fullname, email, role= null, university=null, passwordHash=null) {
-    const res = await pool.query( 
-      'INSERT INTO users (fullname, email, role, university, password_hash) VALUES ($1, $2, $3, $4, $5) RETURNING id, fullname, email, role, university, matric_number',
-      [fullname, email, role, university, passwordHash]
+  static async create(fullname, email, role = null, university = null, passwordHash = null, department = null, level = null, matric_number) {
+    const res = await pool.query(
+        'INSERT INTO users (fullname, email, role, university, password_hash, department, level, matric_number) VALUES ($1, $2, $3, $4, $5, $6, $7, $8) RETURNING id, fullname, email, role, university, matric_number, department, level',
+        [fullname, email, role, university, passwordHash, department, level, matric_number]
     );
     return res.rows[0];
   }

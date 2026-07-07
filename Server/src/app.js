@@ -6,11 +6,12 @@ import cors from 'cors';
 import passport from 'passport';
 import { passportLocalConfig, passportOauthGoogleConfig } from './configs/passport.js';
 import authRoutes from './routes/auth.routes.js';
-import { globalRateLimiter } from './middlewares/rateLimiter.middleware.js'; 
+import { globalRateLimiter } from './middlewares/rateLimiter.middleware.js';
 import solanaRoutes from './routes/solana.routes.js'
 import mainAlerts from './routes/main.alerts.js'
 import studentsRoutes from './routes/student.route.js'
 import adminRoutes from './routes/admin.routes.js';
+import superAdminRoutes from './routes/superadmin.routes.js'
 const app = express();
 const isDev = process.env.NODE_ENV === 'development';
 
@@ -39,6 +40,7 @@ app.use(passport.initialize());
 app.use('/', authRoutes);
 app.use('/student', studentsRoutes);
 app.use('/admin', adminRoutes);
+app.use('/superadmin', superAdminRoutes);
 app.use('/universities', solanaRoutes);
 app.use('/api', mainAlerts);
 

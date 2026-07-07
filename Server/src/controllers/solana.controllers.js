@@ -214,7 +214,6 @@ export const verifyCertificateController = async (req, res) => {
     try {
         const { document_hash, verifier_org } = req.body;
         const verifierId = req.user.id;
-        const timestamp = Math.floor(Date.now() / 1000);
 
         const certRecord = await Certificate.findByHash(document_hash);
         if (!certRecord) {
@@ -235,7 +234,6 @@ export const verifyCertificateController = async (req, res) => {
             verifierOrg: verifier_org,
             verifierId,
             universityId: university_id,
-            timestamp,
             txSignature: chainResult.tx,
             pdaAddress: chainResult.verificationPDA,
         });

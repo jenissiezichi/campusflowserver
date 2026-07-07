@@ -1,18 +1,12 @@
-import { registerUniversity, getAllUniversities } from "../services/solanaService.js"
+import { getAllUniversities, registerUniversity } from "../services/solanaService.js";
 
+import crypto from 'crypto';
+import { wallet } from '../configs/solana.js';
+import Certificate from '../models/Certificate.js';
+import Incident from '../models/Incident.js';
 import University from "../models/University.js";
-import { fetchAllIncidents } from "../services/solanaService.js"
-import { wallet } from '../configs/solana.js'
-import { reportIncident } from '../services/solanaService.js'
-import Incident from '../models/Incident.js'
-import crypto from 'crypto'
-import { revokeCertificate } from '../services/solanaService.js'
-import Certificate from '../models/Certificate.js'
-import { issueCertificate } from '../services/solanaService.js'
-import VerificationRecord from "../models/Verification.js"
-import { verifyCertificate } from '../services/solanaService.js'
-import { givemeCertificate } from '../services/solanaService.js'
-import { fetchAllVerification } from '../services/solanaService.js'
+import VerificationRecord from "../models/Verification.js";
+import { fetchAllIncidents, fetchAllVerification, givemeCertificate, issueCertificate, revokeCertificate, verifyCertificate } from "../services/solanaService.js";
 
 
 export const createUniversity = async (req, res) => {
@@ -136,14 +130,9 @@ export const getAllIncidents = async (req, res) => {
 //     }
 // }
 
-
-
-
-
-
 export const createCertificate = async (req, res) => {
     try {
-        const { studentName, matricNumber, certificateType, institution } = req.body; // ✅ from frontend
+        const { studentName, matricNumber, certificateType, institution } = req.body;
 
         const universityId = req.user.universityId;
         const certificateUrl = req.file.path;
@@ -171,7 +160,7 @@ export const createCertificate = async (req, res) => {
             universityId,
             certificateUrl,
             timestamp,
-            txSignature:chainResult.tx,
+            txSignature: chainResult.tx,
             pdaAddress: chainResult.certificatePDA,
         });
 

@@ -5,7 +5,7 @@ const resend = new Resend(process.env.RESEND_API_KEY);
 const templates = {
   welcome: (name) => ({
     subject: 'Welcome to CampusFlow 🎓',
-    html:`
+    html: `
         <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px;">
           <div style="background: linear-gradient(135deg, #2563eb, #1e40af); padding: 30px; border-radius: 12px; text-align: center;">
             <h1 style="color: white; margin: 0;">Welcome to CampusFlow</h1>
@@ -24,7 +24,7 @@ const templates = {
 
   resetPassword: (otp) => ({
     subject: 'Reset Your CampusFlow Password',
-    html:`
+    html: `
         <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px;">
           <div style="background: linear-gradient(135deg, #2563eb, #1e40af); padding: 30px; border-radius: 12px; text-align: center;">
             <h1 style="color: white; margin: 0;">Password Reset</h1>

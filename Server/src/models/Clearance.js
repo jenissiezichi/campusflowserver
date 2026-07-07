@@ -28,4 +28,12 @@ class Clearance{
     return res.rows;
   }
 
+  static async getStudentRecords(matricNumber) {
+    const res = await pool.query(
+        'SELECT stage_name, is_approved FROM clearance_records WHERE matric_number = $1',
+        [matricNumber]
+    );
+    return res.rows;
+  }
+
 }export default Clearance;

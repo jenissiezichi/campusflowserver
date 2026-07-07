@@ -50,21 +50,19 @@ export const getAllUniversities = async () => {
     }));
 };
 
-export const givemeCertificate = async (universityId) => {
-    const certificate = await program.account.certificate.all();
-    return certificate
-        .filter(item => item.account.universityId === universityId)
-        .map((item) => ({
-            hash: item.hash,
-            studentId: item.account.studentId,
-            studentName: item.account.studentName,
-            certificateType: item.account.certificateType,
-            institution: item.account.institution,
-            timestamp: item.account.timestamp.toString(),
-            is_valid: item.account.is_valid,
-
-        }));
-}
+export const givemeCertificate = async () => {
+    const certificates = await program.account.certificate.all();
+    return certificates.map((item) => ({
+        pdaAddress: item.publicKey.toString(),
+        hash: item.account.hash,
+        studentId: item.account.studentId,
+        studentName: item.account.studentName,
+        certificateType: item.account.certificateType,
+        institution: item.account.institution,
+        timestamp: item.account.timestamp.toString(),
+        isValid: item.account.isValid,
+    }));
+};
 
 export const fetchAllIncidents = async (universityId) => {
     const incidents = await program.account.incident.all();

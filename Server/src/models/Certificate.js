@@ -3,10 +3,10 @@ import pool from '../configs/db.js'
 class Certificate {
     static async create({ hash, matricNumber, studentName, certificateType, institution, universityId, timestamp, txSignature, pdaAddress, certificateUrl }) {
         const res = await pool.query(
-            `INSERT INTO certificates ( hash, matric_number, student_name, certificate_type, institution, university_id, timestamp, is_valid, tx_signature, pda_address, certificate_url)
-VALUES($1, $2, $3, $4, $5, $6, $7, $8, true,$9, $10)
-RETURNING *`,
-            [hash,matricNumber, studentName, certificateType, institution, universityId, timestamp, txSignature, pdaAddress, certificateUrl]
+            `INSERT INTO certificates (hash, matric_number, student_name, certificate_type, institution, university_id, timestamp, is_valid, tx_signature, pda_address, certificate_url)
+             VALUES($1, $2, $3, $4, $5, $6, $7, true, $8, $9, $10)
+                 RETURNING *`,
+            [hash, matricNumber, studentName, certificateType, institution, universityId, timestamp, txSignature, pdaAddress, certificateUrl]
         );
         return res.rows[0];
     }
@@ -27,6 +27,8 @@ RETURNING *`,
         );
         return res.rows[0];
     }
+
+
     static async revoke(hash) {
         const res = await pool.query(
             `UPDATE certificates SET is_valid = false WHERE hash =$1 RETURNING *`, [hash],
@@ -34,5 +36,15 @@ RETURNING *`,
         return res.rows[0];
     }
 
+    static async getCertificateByMatric(matricNumber) {
+        const res = await pool.query(
+            'SELECT hash, certificate_type, institution, is_valid, tx_signature, pda_address, certificate_url, timestamp, created_at FROM certificates WHERE matric_number = $1',
+            [matricNumber]
+        );
+        return res.rows[0] || null;
+    }
+
 }
+
+
 export default Certificate;

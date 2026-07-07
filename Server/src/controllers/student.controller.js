@@ -64,3 +64,21 @@ export const getClearanceStages = async (req, res, next) => {
     })
   }
 };
+
+export const getClearanceStatus = async (req, res, next) => {
+  try{
+    const {matricNumber} = req.user;
+    const records = await Clearance.getStudentRecords(matricNumber);
+    res.json({
+      success: true,
+      message: "Clearance status fetched successfully",
+      data: records
+    });
+  } catch (error) {
+    res.status(400).json({
+      success: false,
+      message: error?.message || "Failed to fetch clearance status",
+    })
+  }
+}
+

@@ -86,7 +86,7 @@ export const login = (req, res, next) => {
     return res.status(200).json({
       message: 'Logged in successfully',
       token: `Bearer ${token}`,
-      user: { id: user.id, email: user.email, role: user.role, university: user.university, matric_number: user.matric_number },
+      user: { id: user.id, email: user.email, role: user.role, university: user.university, matric_number: user.matric_number, level: user.level, department: user.department },
     });
   })(req, res, next);
 };
@@ -175,8 +175,8 @@ export const verifyGoogleSigninUser = (req, res, next) => {
 
 export const getMe = (req, res) => {
   if (req.user) {
-    const { id, fullname, email, matric_number, department, university } = req.user;
-    res.status(200).json({ user: { id, fullname, email, matric_number, department, university } });
+    const { id, fullname, email, matric_number, department, university, level } = req.user;
+    res.status(200).json({ user: { id, fullname, email, matric_number, department, university, level } });
   } else {
     res.status(401).json({ message: 'Not authenticated' });
   }

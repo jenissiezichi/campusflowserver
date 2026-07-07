@@ -8,11 +8,11 @@ class Admin {
 
     static async getStudentsByLevel(universityId, level) {
         const res = await pool.query(
-            `SELECT id, fullname, email, matric_number, department, academic_level 
+            `SELECT id, fullname, email, matric_number, department, level, university 
          FROM users 
          WHERE university = $1 
          AND role = 'student'
-         AND academic_level = $2
+         AND level = $2
          ORDER BY fullname ASC`,
             [universityId, level]
         );

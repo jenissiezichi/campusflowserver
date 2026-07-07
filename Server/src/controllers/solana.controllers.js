@@ -153,14 +153,14 @@ export const createCertificate = async (req, res) => {
             .update(`${matricNumber}-${studentName}-${certificateType}-${institution}-${timestamp}`)
             .digest('hex');
 
-        // const chainResult = await issueCertificate({
-        //     universityId,
-        //     studentId: matricNumber,
-        //     studentName,
-        //     certificateType,
-        //     institution,
-        //     hash,
-        // });
+        const chainResult = await issueCertificate({
+            universityId,
+            studentId: matricNumber,
+            studentName,
+            certificateType,
+            institution,
+            hash,
+        });
 
         const dbRecord = await Certificate.create({
             hash,
@@ -171,15 +171,15 @@ export const createCertificate = async (req, res) => {
             universityId,
             certificateUrl,
             timestamp,
-            txSignature:null,  //chainResult.tx,
-            pdaAddress:null // chainResult.certificatePDA,
+            txSignature:chainResult.tx,
+            pdaAddress: chainResult.certificatePDA,
         });
 
         res.status(201).json({
             success: true,
             message: "Certificate Processed Successfully.",
             database: dbRecord,
-            // chain: chainResult
+            chain: chainResult
         });
 
     } catch (err) {
@@ -207,8 +207,8 @@ export const getAllCertificate = async (req, res) => {
 
 export const getCertificateById = async (req, res) => {
     try {
-        const { id } = req.params;
-        const dbCert = await Certificate.findByCertificateId(id);
+        const { matricNumber, id } = req.params;
+        const dbCert = await Certificate.getCertificateByMatric(matricNumber);
         const chainCert = null;
 
         res.status(200).json({

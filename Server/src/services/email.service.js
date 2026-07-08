@@ -22,6 +22,22 @@ const templates = {
         </div>`
   }),
 
+  sosAlert: ({studentName, matricNumber, locationText, description}) => ({
+    subject: '🚨 SOS Alert - Immediate Attention Required',
+    html: `<div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px;">
+      <div style="background: #dc2626; padding: 30px; border-radius: 12px; text-align: center;">
+        <h1 style="color: white; margin: 0;">🚨 SOS Alert</h1>
+      </div>
+      <div style="padding: 30px; background: #fef2f2; border-radius: 0 0 12px 12px;">
+        <p><strong>Student:</strong> ${studentName} (${matricNumber})</p>
+         <p><strong>Matric Number:</strong> ${matricNumber}</p>
+        <p><strong>Location:</strong> ${locationText}</p>
+        <p><strong>Details:</strong> ${description}</p>
+        <p style="color: #dc2626; font-weight: bold;">Please respond immediately.</p>
+      </div>
+    </div>`
+  }),
+
   resetPassword: (otp) => ({
     subject: 'Reset Your CampusFlow Password',
     html:`
@@ -56,3 +72,4 @@ export const sendEmail = async (to, templateName, data) => {
 
   return result;
 };
+

@@ -13,7 +13,7 @@ import VerificationRecord from "../models/Verification.js"
 import { verifyCertificate } from '../services/solanaService.js'
 import { givemeCertificate } from '../services/solanaService.js'
 import { fetchAllVerification } from '../services/solanaService.js'
-
+import {sendEmail} from "../services/email.service.js";
 
 export const createUniversity = async (req, res) => {
     try {
@@ -72,24 +72,31 @@ export const fetchAllUniversity = async (req, res) => {
 
 export const createIncidentReport = async (req, res) => {
     try {
+        console.log("req.user:", req.user);
         const { category, locationText, description, latitude, longitude } = req.body;
         const matric_number = req.user.matricNumber;
         const studentName = req.user.fullname;
-        const universityId = req.user.university;
-        const incidentId = crypto.randomUUID();
+        const universityId = req.user.universityId;
+        const incidentId = crypto.randomUUID().replace(/-/g, '');
         const timestamp = Math.floor(Date.now() / 1000);
 
-        // const chainResult = await reportIncident({
-        //     universityId,
-        //     studentId: studentId.toString(),
-        //     incidentId,
-        //     studentName,
-        //     latitude,
-        //     longitude,
-        //     description,
-        // });
+        const chainResult = await reportIncident({
+            universityId,
+            studentId: matric_number.toString(),
+            incidentId,
+            studentName,
+            latitude,
+            longitude,
+            description,
+        });
+        const securityEmail =  process.env.SECURITY_ALERT_EMAIL;
 
-        //  commented the chain writing out for now
+        await sendEmail(securityEmail, "sosAlert", {
+            student_name: studentName,
+            matricNumber: matric_number,
+            location: locationText,
+            description,
+        });
 
         const dbRecord = await Incident.create({
             incidentId,
@@ -102,8 +109,8 @@ export const createIncidentReport = async (req, res) => {
             description,
             universityId,
             timestamp,
-            txSignature: null, //chainResult.tx,
-            pdaAddress: null,  //chainResult.incidentPDA,
+            txSignature: chainResult.tx,
+            pdaAddress: chainResult.incidentPDA,
         })
         res.status(200).json({ success: true, message: `Incident reported Successfully.`, data: dbRecord });
     } catch (err) {
@@ -143,7 +150,7 @@ export const getAllIncidents = async (req, res) => {
 
 export const createCertificate = async (req, res) => {
     try {
-        const { studentName, matricNumber, certificateType, institution } = req.body; // ✅ from frontend
+        const { studentName, matricNumber, certificateType, institution } = req.body;
 
         const universityId = req.user.universityId;
         const certificateUrl = req.file.path;

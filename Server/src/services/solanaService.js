@@ -84,11 +84,11 @@ export const reportIncident = async ({
     universityId, studentId, incidentId, studentName, latitude, longitude, description
 }) => {
     const [universityPDA] = PublicKey.findProgramAddressSync(
-        [Buffer.from("university"), Buffer.from(universityId)], // anchor seeds for university
+        [Buffer.from("university"), Buffer.from(universityId)],
         program.programId
     );
     const [incidentPDA] = PublicKey.findProgramAddressSync(
-        [Buffer.from("incident"), Buffer.from(universityId), Buffer.from(studentId), Buffer.from(incidentId)], // anchor seeds for incidents
+        [Buffer.from("incident"), universityPDA.toBuffer(), Buffer.from(studentId), Buffer.from(incidentId)],
         program.programId
     );
     const tx = await program.methods

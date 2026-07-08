@@ -12,4 +12,5 @@ router.get('/clearance-stages', authMiddleware, getClearanceStages);
 router.get('/clearance-stats', authMiddleware, getClearanceStatus);
 router.get('/certficate',authMiddleware,)
 router.get('/verify-record/:hash', getVerificationByHash);
+
 export default router;

@@ -12,7 +12,6 @@ import {
   getAllCertificate,
   getCertificateById,
   revokeCertificateController,
-  verifyCertificateController,
   getVerificationRecords,
   getVerificationByHash
 } from '../controllers/solana.controllers.js'
@@ -25,14 +24,13 @@ const router = express.Router();
 
 
 router.post('/upload-certificate', authMiddleware, uploadDocument.single('certificate'), createCertificate);
-router.post('/verify', authMiddleware, verifyCertificateController);
+
 router.get('/certificate/student/:matric_number', isAdmin, getCertificateByMatric);
 router.patch('/certificate/revoke',isAdmin, authMiddleware, revokeCertificateController);
 router.get('/students', isAdmin, getStudentsByLevel);
 router.get('/get_all_users',isAdmin, getAllStudents);
 router.get('/certificate', authMiddleware, getAllCertificate);
 router.get('/certificate/:id', authMiddleware, getCertificateById);
-router.get('/verify', authMiddleware, verifyCertificateController);
 router.get('/record/verify', authMiddleware, getVerificationRecords);
 router.get('/records/:hash', authMiddleware, getVerificationByHash);
 router.get('/clearance-upload', authMiddleware, getAllClearanceUpload);

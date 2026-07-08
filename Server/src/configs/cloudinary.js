@@ -1,7 +1,7 @@
 import { v2 as cloudinary } from 'cloudinary';
-import { CloudinaryStorage } from 'multer-storage-cloudinary';
-import multer from 'multer';
 import dotenv from 'dotenv';
+import multer from 'multer';
+import { CloudinaryStorage } from 'multer-storage-cloudinary';
 
 dotenv.config();
 
@@ -15,10 +15,10 @@ const storage = new CloudinaryStorage({
   cloudinary,
   params: async (req, file) => {
     let folderPath = 'campus-flow/student-documents';
-    if (req.baseUrl.includes('admin') || req.body.uploadType === 'certificate') {
+    if (req.baseUrl.includes('admin') || req.body.uploadType ==='certificate') {
       folderPath = 'campus-flow/certificates';
     }
-    
+
     return {
       folder: folderPath,
       resource_type: 'auto',

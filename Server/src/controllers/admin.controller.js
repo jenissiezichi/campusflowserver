@@ -1,6 +1,5 @@
-import CloudinaryModel from '../models/cloudinaryModel.js';
-import Certificate from '../models/Certificate.js';
 import Admin from '../models/admin.model.js';
+import Certificate from '../models/Certificate.js';
 import Clearance from "../models/Clearance.js";
 
 export const createCertificate = async (req, res) => {
@@ -57,11 +56,11 @@ export const getCertificateByMatric = async (req, res) => {
 };
 
 export const getAllClearanceUpload = async (req, res) => {
-  try{
+  try {
     const clearance = await Clearance.getAll(req.user.universityId);
     res.status(200).json({ success: true, data: clearance });
   }
-  catch (e){
+  catch (e) {
     res.status(500).json({ success: false, message: e.message });
   }
 }

@@ -13,7 +13,6 @@ import VerificationRecord from "../models/Verification.js"
 import { verifyCertificate } from '../services/solanaService.js'
 import { givemeCertificate } from '../services/solanaService.js'
 import { fetchAllVerification } from '../services/solanaService.js'
-import {sendEmail} from "../services/email.service.js";
 
 
 export const createUniversity = async (req, res) => {
@@ -73,31 +72,24 @@ export const fetchAllUniversity = async (req, res) => {
 
 export const createIncidentReport = async (req, res) => {
     try {
-        console.log("req.user:", req.user);
         const { category, locationText, description, latitude, longitude } = req.body;
         const matric_number = req.user.matricNumber;
         const studentName = req.user.fullname;
-        const universityId = req.user.universityId;
-        const incidentId = crypto.randomUUID().replace(/-/g, '');
+        const universityId = req.user.university;
+        const incidentId = crypto.randomUUID();
         const timestamp = Math.floor(Date.now() / 1000);
 
-        const chainResult = await reportIncident({
-            universityId,
-            studentId: matric_number.toString(),
-            incidentId,
-            studentName,
-            latitude,
-            longitude,
-            description,
-        });
-const securityEmail =  process.env.SECURITY_ALERT_EMAIL;
+        // const chainResult = await reportIncident({
+        //     universityId,
+        //     studentId: studentId.toString(),
+        //     incidentId,
+        //     studentName,
+        //     latitude,
+        //     longitude,
+        //     description,
+        // });
 
-        await sendEmail(securityEmail, "sosAlert", {
-            student_name: studentName,
-            matricNumber: matric_number,
-            location: locationText,
-            description,
-        });
+        //  commented the chain writing out for now
 
         const dbRecord = await Incident.create({
             incidentId,
@@ -110,8 +102,8 @@ const securityEmail =  process.env.SECURITY_ALERT_EMAIL;
             description,
             universityId,
             timestamp,
-            txSignature: chainResult.tx,
-            pdaAddress: chainResult.incidentPDA,
+            txSignature: null, //chainResult.tx,
+            pdaAddress: null,  //chainResult.incidentPDA,
         })
         res.status(200).json({ success: true, message: `Incident reported Successfully.`, data: dbRecord });
     } catch (err) {
@@ -121,7 +113,7 @@ const securityEmail =  process.env.SECURITY_ALERT_EMAIL;
 
 export const getAllIncidents = async (req, res) => {
     try {
-        const universityId = req.user.universityId;
+        const universityId = req.user.university;
         const incidents = await Incident.findAllIncidents(universityId);
         const incident = await fetchAllIncidents(universityId);
         res.status(200).json({
@@ -198,7 +190,7 @@ export const createCertificate = async (req, res) => {
 
 export const getAllCertificate = async (req, res) => {
     try {
-        const universityId = req.user.universityId;
+        const universityId = req.user.university;
         const dbCert = await Certificate.findAllCertificates(universityId);
         const chainCert = await givemeCertificate(universityId);
 
@@ -229,12 +221,52 @@ export const getCertificateById = async (req, res) => {
     }
 }
 
+export const verifyCertificateController = async (req, res) => {
+    try {
+        const { document_hash, verifier_org } = req.body;
+        const verifierId = req.user.id;
+        const timestamp = Math.floor(Date.now() / 1000);
 
+        const certRecord = await Certificate.findByHash(document_hash);
+        if (!certRecord) {
+            return res.status(404).json({ success: false, message: "Certificate not found." });
+        }
+
+        const { matric_number, university_id } = certRecord;
+
+        const chainResult = await verifyCertificate({
+            documentHash: document_hash,
+            verifierOrg: verifier_org,
+            studentId: matric_number,
+            universityId: university_id,
+        });
+
+        const dbRecord = await VerificationRecord.create({
+            documentHash: document_hash,
+            verifierOrg: verifier_org,
+            verifierId,
+            universityId: university_id,
+            timestamp,
+            txSignature: chainResult.tx,
+            pdaAddress: chainResult.verificationPDA,
+        });
+
+        res.status(201).json({
+            success: true,
+            message: "Certificate verified successfully.",
+            certificate: certRecord,
+            verification: dbRecord,
+            chain: chainResult
+        });
+    } catch (err) {
+        res.status(500).json({ success: false, message: err.message });
+    }
+};
 
 export const revokeCertificateController = async (req, res) => {
     try {
         const { hash } = req.body;
-        const universityId = req.user.universityId;
+        const universityId = req.user.university;
         const certRecord = await Certificate.findByHash(hash);
         if (!certRecord) {
             return res.status(404).json({ success: false, message: "Certificate not found" });
@@ -261,7 +293,7 @@ export const revokeCertificateController = async (req, res) => {
 
 export const getVerificationRecords = async (req, res) => {
     try {
-        const universityId = req.user.universityId;
+        const universityId = req.user.university;
         const chain = await fetchAllVerification();
         const records = await VerificationRecord.findByUniversity(universityId);
         res.status(200).json({ success: true, count: records.length, db: records, chaindb: chain });
@@ -273,7 +305,7 @@ export const getVerificationRecords = async (req, res) => {
 export const getVerificationByHash = async (req, res) => {
     try {
         const { hash } = req.params;
-        const universityId = req.user.universityId;
+        const universityId = req.user.university;
 
         const records = await VerificationRecord.findByHash(hash);
         if (!records.length) {

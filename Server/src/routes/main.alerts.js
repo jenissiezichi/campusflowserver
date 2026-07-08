@@ -1,7 +1,7 @@
 import express from "express";
-import { sendAlert } from "./alerta.js";
-import {createIncidentReport} from '../controllers/solana.controllers.js'
+import { createIncidentReport } from '../controllers/solana.controllers.js';
 import authMiddleware from '../middlewares/auth.middleware.js';
+import { sendAlert } from "./alerta.js";
 
 export const alerts = async (req, res) => {
     try {
@@ -73,8 +73,9 @@ ${mapsLink}
     }
 };
 
-
 const alertRoute = express.Router();
-alertRoute.post("/telegram/send",authMiddleware, alerts);
-alertRoute.post("/telegram/report", authMiddleware , reports);
+alertRoute.post("/telegram/send", authMiddleware, alerts);
+alertRoute.post("/telegram/report", authMiddleware, reports);
 export default alertRoute;
+
+

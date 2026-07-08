@@ -15,7 +15,4 @@ class SuperAdmin {
   }
 }
 
-
-
-
 export default SuperAdmin;

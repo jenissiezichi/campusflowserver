@@ -13,7 +13,6 @@ import {
   getCertificateById,
   revokeCertificateController,
   getVerificationRecords,
-  getVerificationByHash
 } from '../controllers/solana.controllers.js'
 
 import authMiddleware from '../middlewares/auth.middleware.js'
@@ -29,10 +28,9 @@ router.get('/certificate/student/:matric_number', isAdmin, getCertificateByMatri
 router.patch('/certificate/revoke',isAdmin, authMiddleware, revokeCertificateController);
 router.get('/students', isAdmin, getStudentsByLevel);
 router.get('/get_all_users',isAdmin, getAllStudents);
-router.get('/certificate', authMiddleware, getAllCertificate);
+router.get('/certificate', authMiddleware, getAllCertificate); // all certificates
 router.get('/certificate/:id', authMiddleware, getCertificateById);
 router.get('/record/verify', authMiddleware, getVerificationRecords);
-router.get('/records/:hash', authMiddleware, getVerificationByHash);
 router.get('/clearance-upload', authMiddleware, getAllClearanceUpload);
 
 export default router;

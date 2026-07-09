@@ -1,4 +1,4 @@
-import { registerUniversity, getAllUniversities } from "../services/solanaService.js"
+import {registerUniversity, getAllUniversities, getOnChainCertificate} from "../services/solanaService.js"
 
 import University from "../models/University.js";
 import { fetchAllIncidents } from "../services/solanaService.js"
@@ -10,7 +10,6 @@ import { revokeCertificate } from '../services/solanaService.js'
 import Certificate from '../models/Certificate.js'
 import { issueCertificate } from '../services/solanaService.js'
 import VerificationRecord from "../models/Verification.js"
-import { verifyCertificate } from '../services/solanaService.js'
 import { givemeCertificate } from '../services/solanaService.js'
 import { fetchAllVerification } from '../services/solanaService.js'
 import {sendEmail} from "../services/email.service.js";
@@ -212,63 +211,24 @@ export const getAllCertificate = async (req, res) => {
     }
 }
 
+
 export const getCertificateById = async (req, res) => {
     try {
-        const { matricNumber, id } = req.params;
-        const dbCert = await Certificate.getCertificateByMatric(matricNumber);
-        const chainCert = null;
+        const matric_number = req.user.matricNumber;   // ✅
+        const universityId = req.user.universityId;     // ✅
+        const cert = await Certificate.getCertificateByMatric(matric_number, universityId);
 
-        res.status(200).json({
-            success: true,
-            db: dbCert,
-            chain: dbCert,
-        });
-    } catch (err) {
-        res.status(500).json({ success: false, message: err.message, });
-    }
-}
-
-export const verifyCertificateController = async (req, res) => {
-    try {
-        const { document_hash, verifier_org } = req.body;
-        const verifierId = req.user.id;
-        const timestamp = Math.floor(Date.now() / 1000);
-
-        const certRecord = await Certificate.findByHash(document_hash);
-        if (!certRecord) {
-            return res.status(404).json({ success: false, message: "Certificate not found." });
+        let onChain = null;
+        if (cert) {
+            onChain = await getOnChainCertificate(matric_number, cert.hash);
         }
 
-        const { matric_number, university_id } = certRecord;
-
-        const chainResult = await verifyCertificate({
-            documentHash: document_hash,
-            verifierOrg: verifier_org,
-            studentId: matric_number,
-            universityId: university_id,
-        });
-
-        const dbRecord = await VerificationRecord.create({
-            documentHash: document_hash,
-            verifierOrg: verifier_org,
-            verifierId,
-            universityId: university_id,
-            timestamp,
-            txSignature: chainResult.tx,
-            pdaAddress: chainResult.verificationPDA,
-        });
-
-        res.status(201).json({
-            success: true,
-            message: "Certificate verified successfully.",
-            certificate: certRecord,
-            verification: dbRecord,
-            chain: chainResult
-        });
+        res.status(200).json({ success: true, data: cert, chain: onChain });
     } catch (err) {
         res.status(500).json({ success: false, message: err.message });
     }
 };
+
 
 export const revokeCertificateController = async (req, res) => {
     try {
@@ -304,25 +264,6 @@ export const getVerificationRecords = async (req, res) => {
         const chain = await fetchAllVerification();
         const records = await VerificationRecord.findByUniversity(universityId);
         res.status(200).json({ success: true, count: records.length, db: records, chaindb: chain });
-    } catch (err) {
-        res.status(500).json({ success: false, message: err.message });
-    }
-}
-
-export const getVerificationByHash = async (req, res) => {
-    try {
-        const { hash } = req.params;
-        const universityId = req.user.university;
-
-        const records = await VerificationRecord.findByHash(hash);
-        if (!records.length) {
-            return res.status(404).json({ success: false, message: "No verification found" });
-        }
-        if (records[0].university_id !== universityId) {
-            return res.status(403).json({ success: false, message: "Unauthorized" });
-        }
-        res.status(200).json({ success: true, count: records.length, db: records });
-
     } catch (err) {
         res.status(500).json({ success: false, message: err.message });
     }

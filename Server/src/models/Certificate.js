@@ -36,10 +36,11 @@ class Certificate {
         return res.rows[0];
     }
 
-    static async getCertificateByMatric(matricNumber) {
+    static async getCertificateByMatric(matricNumber, universityId) {
         const res = await pool.query(
-            'SELECT hash, certificate_type, institution, is_valid, tx_signature, pda_address, certificate_url, timestamp, created_at FROM certificates WHERE matric_number = $1',
-            [matricNumber]
+            `SELECT hash, certificate_type, institution, is_valid, tx_signature, pda_address, certificate_url, timestamp, created_at
+         FROM certificates WHERE matric_number = $1 AND university_id = $2`,
+            [matricNumber, universityId]
         );
         return res.rows[0] || null;
     }

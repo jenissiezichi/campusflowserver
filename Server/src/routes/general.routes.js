@@ -1,6 +1,5 @@
 import { Router } from "express";
-import authMiddleware from "../middlewares/auth.middleware.js";
-import { verifyCertificateController } from "../controllers/solana.controllers.js";
+import { verifyCertificateController } from "../controllers/public.controller.js";
 
 const router = Router();
 

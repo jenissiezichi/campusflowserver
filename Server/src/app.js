@@ -11,6 +11,7 @@ import solanaRoutes from './routes/solana.routes.js'
 import mainAlerts from './routes/main.alerts.js'
 import studentsRoutes from './routes/student.route.js'
 import adminRoutes from './routes/admin.routes.js';
+import generalRoutes from './routes/general.routes.js'
 const app = express();
 const isDev = process.env.NODE_ENV === 'development';
 
@@ -41,6 +42,7 @@ app.use('/student', studentsRoutes);
 app.use('/admin', adminRoutes);
 app.use('/universities', solanaRoutes);
 app.use('/api', mainAlerts);
+app.use('/',generalRoutes)
 
 // 404 Handler
 app.use((req, res) => {

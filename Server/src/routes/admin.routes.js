@@ -23,7 +23,7 @@ const router = express.Router();
 
 
 router.post('/upload-certificate', authMiddleware, uploadDocument.single('certificate'), createCertificate);
-
+router.get('/incidents', authMiddleware,getAllIncidents);
 router.get('/certificate/student/:matric_number', isAdmin, getCertificateByMatric);
 router.patch('/certificate/revoke',isAdmin, authMiddleware, revokeCertificateController);
 router.get('/students', isAdmin, getStudentsByLevel);

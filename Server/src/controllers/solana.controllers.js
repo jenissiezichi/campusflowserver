@@ -119,13 +119,14 @@ export const createIncidentReport = async (req, res) => {
 
 export const getAllIncidents = async (req, res) => {
     try {
-        const universityId = req.user.university;
+        const universityId = req.user.universityId;
         const incidents = await Incident.findAllIncidents(universityId);
-        const incident = await fetchAllIncidents(universityId);
+       console.log(req.user);
+        // const incident = await fetchAllIncidents(universityId);
         res.status(200).json({
             success: true,
             count: incidents.length,
-            chain: incident,
+            // chain: incident,
             database: incidents,
         });
     } catch (err) {

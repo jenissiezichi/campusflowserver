@@ -2,10 +2,11 @@ import express from "express";
 import { createIncidentReport } from '../controllers/solana.controllers.js';
 import authMiddleware from '../middlewares/auth.middleware.js';
 import { sendAlert } from "./alerta.js";
+import { sendEmail } from "../services/email.service.js";
 
 export const alerts = async (req, res) => {
     try {
-        const { latitude, longitude, locationText } = req.body;   // ← channelRef removed from here
+        const { latitude, longitude, locationText } = req.body;
         const mapsLink = `https://www.google.com/maps?q=${latitude},${longitude}`;
         const timestamp = new Date().toLocaleString("en-NG", {
             timeZone: "Africa/Lagos",
@@ -22,8 +23,23 @@ ${mapsLink}
 `;
         const result = await sendAlert({
             message,
-            channelRef: process.env.ALERTA_CHANNEL_REF,   // ← added
+            channelRef: process.env.ALERTA_CHANNEL_REF,
         });
+
+        // ← ADD THIS BLOCK
+        try {
+            const securityEmail = process.env.SECURITY_ALERT_EMAIL;
+            await sendEmail(securityEmail, "sosAlert", {
+                student_name: req.user.fullname,
+                matricNumber: req.user.matric_number,
+                location: locationText || mapsLink,
+                description: "Emergency SOS triggered — immediate assistance required.",
+            });
+        } catch (emailErr) {
+            console.error("SOS email failed (non-blocking):", emailErr.message);
+        }
+        // ← END ADDED BLOCK
+
         res.json({
             success: true,
             message: "Alert Successfully Sent",
@@ -36,7 +52,6 @@ ${mapsLink}
         });
     }
 };
-
 
 
 

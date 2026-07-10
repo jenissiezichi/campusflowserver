@@ -1,6 +1,7 @@
 import Admin from '../models/admin.model.js';
 import Certificate from '../models/Certificate.js';
 import Clearance from "../models/Clearance.js";
+import { approveClearance } from '../services/solanaService.js';
 
 export const createCertificate = async (req, res) => {
   try {
@@ -64,3 +65,76 @@ export const getAllClearanceUpload = async (req, res) => {
     res.status(500).json({ success: false, message: e.message });
   }
 }
+
+export const approveClearanceController = async (req, res) => {
+  try {
+    if (!['staff', 'admin'].includes(req.user.role)) {
+      return res.status(403).json({ success: false, message: "Only staff or admin can approve clearance." });
+    }
+
+    const { id } = req.params;
+    const record = await Clearance.findById(id);
+    if (!record) {
+      return res.status(404).json({ success: false, message: "Clearance record not found." });
+    }
+    if (record.is_approved === true) {
+      return res.status(400).json({ success: false, message: "This clearance has already been approved." });
+    }
+
+    const staffId = req.user.id.toString();
+
+    const chainResult = await approveClearance({
+      universityId: record.university_id,
+      studentId: record.matric_number,
+      stageName: record.stage_name,
+      documentHash: record.document_hash,
+      staffId,
+    });
+
+    const updated = await Clearance.approve({
+      id,
+      staffId,
+      staffUserId: req.user.id,
+      documentHash: record.document_hash,
+      txSignature: chainResult.tx,
+      pdaAddress: chainResult.clearancePDA,
+    });
+
+    res.status(200).json({
+      success: true,
+      message: "Clearance approved successfully.",
+      data: updated,
+      chain: chainResult,
+    });
+  } catch (err) {
+    res.status(500).json({ success: false, message: err.message });
+  }
+};
+
+export const rejectClearanceController = async (req, res) => {
+  try {
+    if (!['staff', 'admin'].includes(req.user.role)) {
+      return res.status(403).json({ success: false, message: "Only staff or admin can reject clearance." });
+    }
+
+    const { id } = req.params;
+    const record = await Clearance.findById(id);
+    if (!record) {
+      return res.status(404).json({ success: false, message: "Clearance record not found." });
+    }
+
+    const updated = await Clearance.reject({
+      id,
+      staffId: req.user.id.toString(),
+      staffUserId: req.user.id,
+    });
+
+    res.status(200).json({
+      success: true,
+      message: "Clearance rejected.",
+      data: updated,
+    });
+  } catch (err) {
+    res.status(500).json({ success: false, message: err.message });
+  }
+};

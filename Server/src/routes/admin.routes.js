@@ -2,7 +2,10 @@ import express from 'express';
 import { uploadDocument } from '../configs/cloudinary.js';
 import Admin from '../models/admin.model.js';
 import {isAdmin} from "../middlewares/auth.middleware.js";
-import {getAllStudents, getCertificateByMatric, getStudentsByLevel, getAllClearanceUpload} from '../controllers/admin.controller.js';
+import {getAllStudents,
+  getCertificateByMatric, getStudentsByLevel,
+  getAllClearanceUpload, approveClearanceController,
+  rejectClearanceController} from '../controllers/admin.controller.js'
 import {
   getAllIncidents,
   createUniversity,
@@ -32,5 +35,7 @@ router.get('/certificate', authMiddleware, getAllCertificate); // all certificat
 router.get('/certificate/:id', authMiddleware, getCertificateById);
 router.get('/record/verify', authMiddleware, getVerificationRecords);
 router.get('/clearance-upload', authMiddleware, getAllClearanceUpload);
+router.patch('/clearance/:id/approve', authMiddleware, approveClearanceController);
+router.patch('/clearance/:id/reject', authMiddleware, rejectClearanceController);
 
 export default router;

@@ -205,3 +205,25 @@ export const fetchAllVerification = async (universityId) => {
         }))
 }
 
+export const approveClearance = async ({ universityId, studentId, stageName, documentHash, staffId }) => {
+    const [universityPDA] = PublicKey.findProgramAddressSync(
+        [Buffer.from("university"), Buffer.from(universityId)],
+        program.programId
+    );
+    const [clearancePDA] = PublicKey.findProgramAddressSync(
+        [Buffer.from("clearance"), universityPDA.toBuffer(), Buffer.from(studentId), Buffer.from(stageName)],
+        program.programId
+    );
+    const tx = await program.methods
+        .approveClearance(studentId, stageName, documentHash, staffId)
+        .accounts({
+            clearanceRecord: clearancePDA,
+            university: universityPDA,
+            authority: wallet.publicKey,
+            systemProgram: SystemProgram.programId,
+        })
+        .signers([keypair])
+        .rpc();
+    return { tx, clearancePDA: clearancePDA.toString() };
+};
+

@@ -1,3 +1,4 @@
+import crypto from 'crypto';
 import Document from "../models/document.model.js";
 import Clearance from "../models/Clearance.js";
 
@@ -19,6 +20,11 @@ export const uploadStudentDocument = async (req, res) => {
 
     const fileUrl = req.file.path;
     const fileName = req.file.originalname;
+    const timestamp = Math.floor(Date.now() / 1000);
+    const documentHash = crypto
+        .createHash('md5')
+        .update(`${matricNumber}-${stageName}-${fileUrl}-${timestamp}`)
+        .digest('hex');
 
     const doc = await Document.createDocument(
         matricNumber,
@@ -33,6 +39,7 @@ export const uploadStudentDocument = async (req, res) => {
       studentName: req.user.fullname,
       stageName,
       universityId,
+      documentHash,
     });
 
     await Document.linkToClearanceRecord(doc.id, clearanceRecord.id);
@@ -52,7 +59,7 @@ export const getClearanceStages = async (req, res, next) => {
   try {
     const { universityId } = req.user;
     const stages = await Clearance.getAllStages(universityId);
-    res.json({ 
+    res.json({
       success: true,
       message: "Clearance stages fetched successfully",
       data:
@@ -81,4 +88,3 @@ export const getClearanceStatus = async (req, res, next) => {
     })
   }
 }
-

@@ -51,13 +51,16 @@ class User {
     return res.rows[0];
   }
 
-  static async updateProfile(id, role, university) {
-  const res = await pool.query(
-    'UPDATE users SET role = $1, university = $2 WHERE id = $3 RETURNING id, fullname, email, role, university',
-    [role, university, id]
-  );
-  return res.rows[0];
-}
+  static async updateProfile(id, { role, university, department, level, matric_number }) {
+    const res = await pool.query(
+        `UPDATE users
+     SET role = $1, university = $2, department = $3, level = $4, matric_number = $5
+     WHERE id = $6
+     RETURNING id, fullname, email, role, university, department, level, matric_number`,
+        [role, university, department, level, matric_number, id]
+    );
+    return res.rows[0];
+  }
 }
 
 export default User;

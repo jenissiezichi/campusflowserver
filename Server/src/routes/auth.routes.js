@@ -13,6 +13,7 @@ import {
     completeProfile,
     verifyOtp
 } from '../controllers/auth.controllers.js';
+import authMiddleware from '../middlewares/auth.middleware.js';
 import { authRateLimiter, passwordResetRateLimiter } from '../middlewares/rateLimiter.middleware.js';
 
 const router = express.Router();
@@ -30,11 +31,11 @@ router.get('/logout', logout);
 router.get('/auth/google', loadGoogleConcentScreen);
 router.get('/auth/google/callback', verifyGoogleSigninUser);
 router.get('/me', passport.authenticate('jwt', { session: false }), getMe);
-router.post('/complete-profile', passport.authenticate('jwt', { session: false }), completeProfile);
+router.post('/complete-profile', authMiddleware, completeProfile);
 // router.get('/students', passport.authenticate('jwt', { session: false }), getAllStudents);
 router.get('/students', getAllStudents);
 
-// rfreshes the sserver
+// refreshes the server
 router.get('/health', (req, res)=>res.status(200).json({status: 'ok'}));
 
 

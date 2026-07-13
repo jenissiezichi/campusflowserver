@@ -1,79 +1,79 @@
-import {verifyCertificate} from "../services/solanaService.js";
 import Certificate from "../models/Certificate.js";
 import VerificationRecord from "../models/Verification.js";
-import crypto from "crypto";
+import {getOnChainCertificate} from "../services/solanaService.js";
 
 export const verifyCertificateController = async (req, res) => {
+    function maskMatric(m) {
+        if (!m || m.length < 6) return m;
+        return `${m.slice(0, 4)}${"*".repeat(m.length - 7)}${m.slice(-3)}`;
+    }
+
     try {
         const { document_hash, verifier_org } = req.body;
 
-        if (!document_hash || !verifier_org || !document_hash.trim()) {
-            return res.status(400).json({ success: false, message: "Missing required fields." });
+        if (!document_hash || !verifier_org) {
+            return res.status(400).json({ success: false, message: "document_hash and verifier_org are required." });
         }
 
-        const timestamp = Math.floor(Date.now() / 1000);
         const certRecord = await Certificate.findByHash(document_hash);
-
         if (!certRecord) {
-            return res.json({
-                success: true,
-                verified: false,
-                message: 'No certificate found for this hash.',
-            });
-        }
-
-        if (!certRecord.is_valid) {
-            return res.json({
-                success: true,
-                verified: false,
-                revoked: true,
-                message: 'This certificate has been revoked by the issuing institution.',
-                certificate: certRecord,
-            });
+            return res.status(404).json({ success: false, message: "Certificate not found." });
         }
 
         const { matric_number, university_id } = certRecord;
 
-        // Check if this certificate has already been verified on-chain before.
-        const existingVerifications = await VerificationRecord.findByHash(document_hash);
-        const existingOnChainRecord = existingVerifications.find((v) => v.pda_address);
+        // read-only check against the chain — no transaction, no fees
+        const onChainCert = await getOnChainCertificate(matric_number, document_hash);
 
-        let chainResult;
-
-        if (existingOnChainRecord) {
-            // Already proven on-chain once — reuse that proof, don't touch the chain again.
-            chainResult = {
-                tx: existingOnChainRecord.tx_signature,
-                verificationPDA: existingOnChainRecord.pda_address,
-            };
-        } else {
-            // First time this hash is being verified — write the permanent on-chain proof.
-            chainResult = await verifyCertificate({
-                documentHash: document_hash,
-                verifierOrg: verifier_org || 'Public Verification Portal',
-                studentId: matric_number,
-                universityId: university_id,
+        if (!onChainCert) {
+            return res.status(404).json({
+                success: false,
+                message: "Certificate not found on-chain. It may not have been issued correctly.",
             });
         }
 
-        // Always log this specific check in Postgres, regardless of whether chain was touched.
-        const dbRecord = await VerificationRecord.create({
-            documentHash: document_hash,
-            verifierOrg: verifier_org,
-            verifierId: crypto.randomUUID(),
-            universityId: university_id,
-            timestamp,
-            txSignature: chainResult.tx,
-            pdaAddress: chainResult.verificationPDA,
-        });
+        if (!onChainCert.isValid) {
+            return res.status(200).json({
+                success: true,
+                verified: false,
+                message: "Certificate exists on-chain but has been revoked.",
+                certificate: certRecord,
+                chain: onChainCert,
+            });
+        }
 
-        res.status(201).json({
+
+        let verificationRecord = null;
+        try {
+            verificationRecord = await VerificationRecord.create({
+                documentHash: document_hash,
+                verifierOrg: verifier_org,
+                universityId: university_id,
+            });
+        } catch (dbErr) {
+            console.error("Failed to log verification record:", dbErr.message);
+
+        }
+
+        res.status(200).json({
             success: true,
-            message: "Certificate verified successfully.",
-            certificate: certRecord,
-            verification: dbRecord,
-            chain: chainResult,
-            onChainProofReused: Boolean(existingOnChainRecord),
+            verified: onChainCert.isValid,
+            message: onChainCert.isValid
+                ? "Certificate verified successfully."
+                : "Certificate exists on-chain but has been revoked.",
+            certificate: {
+                studentName: onChainCert.studentName,
+                matricNumberMasked: maskMatric(certRecord.matric_number), // e.g. "2024****217"
+                certificateType: onChainCert.certificateType,
+                institution: onChainCert.institution,       // canonical, from chain
+                issuedOn: onChainCert.timestamp,
+                certificateUrl: certRecord.certificate_url,  // keep only if you want the image visible publicly
+            },
+            proof: {
+                hash: document_hash,
+                pdaAddress: certRecord.pda_address,           // needed for the explorer link
+                explorerUrl: `https://explorer.solana.com/address/${certRecord.pda_address}?cluster=devnet`,
+            },
         });
     } catch (err) {
         res.status(500).json({ success: false, message: err.message });

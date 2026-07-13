@@ -193,15 +193,15 @@ export const getAllStudents = async (req, res) => {
 
 
 export const completeProfile = async (req, res, next) => {
-  const { role, university } = req.body;
+  const { role, university, department, level, matric_number } = req.body;
   const userId = req.user.id;
 
-  if (!role || !university) {
-    return res.status(400).json({ message: 'Role and university are required.' });
+  if (!role || !university || !department || !level || !matric_number) {
+    return res.status(400).json({ message: 'All fields are required.' });
   }
 
   try {
-    const updatedUser = await User.updateProfile(userId, role, university);
+    const updatedUser = await User.updateProfile(userId, { role, university, department, level, matric_number });
     const token = generateToken(updatedUser);
     return res.status(200).json({
       message: 'Profile completed successfully.',
@@ -209,6 +209,9 @@ export const completeProfile = async (req, res, next) => {
       user: updatedUser
     });
   } catch (err) {
+    if (err.code === '23505') {
+      return res.status(409).json({ message: 'That matric number is already registered.' });
+    }
     next(err);
   }
 };

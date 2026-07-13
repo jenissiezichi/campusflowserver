@@ -1,5 +1,5 @@
-import { program, wallet, keypair } from "../configs/solana.js"
-import { PublicKey, SystemProgram } from "@solana/web3.js";
+import {keypair, program, wallet} from "../configs/solana.js"
+import {PublicKey, SystemProgram} from "@solana/web3.js";
 
 export const registerUniversity = async (universityId, name) => {
     const [universityPDA] = PublicKey.findProgramAddressSync(
@@ -154,35 +154,20 @@ export const issueCertificate = async ({ universityId, studentId, studentName, c
 };
 
 
-
-
-export const verifyCertificate = async ({ documentHash, verifierOrg, studentId, universityId }) => {
+export const getOnChainCertificate = async (studentId, hash) => {
     const [certificatePDA] = PublicKey.findProgramAddressSync(
-        [Buffer.from("certificate"), Buffer.from(studentId), Buffer.from(documentHash)],
+        [Buffer.from("certificate"), Buffer.from(studentId), Buffer.from(hash)],
         program.programId
     );
-    const [universityPDA] = PublicKey.findProgramAddressSync(
-        [Buffer.from("university"), Buffer.from(universityId)],
-        program.programId
-    );
-    const [verificationPDA] = PublicKey.findProgramAddressSync(
-        [Buffer.from("verification"), wallet.publicKey.toBuffer(), Buffer.from(documentHash)],
-        program.programId
-    );
-
-    const tx = await program.methods
-        .verifyCertificate(documentHash, verifierOrg)
-        .accounts({
-            verificationRecord: verificationPDA,
-            certificate: certificatePDA,
-            university: universityPDA,
-            verifier: wallet.publicKey,
-            systemProgram: SystemProgram.programId,
-        })
-        .signers([keypair])
-        .rpc();
-
-    return { tx, verificationPDA: verificationPDA.toString() };
+    try {
+        const data = await program.account.certificate.fetch(certificatePDA);
+        return {
+            ...data,
+            timestamp: data.timestamp.toString(),
+        };
+    } catch {
+        return null;
+    }
 };
 
 export const revokeCertificate = async ({ hash, studentId, universityId }) => {
@@ -219,4 +204,26 @@ export const fetchAllVerification = async (universityId) => {
 
         }))
 }
+
+export const approveClearance = async ({ universityId, studentId, stageName, documentHash, staffId }) => {
+    const [universityPDA] = PublicKey.findProgramAddressSync(
+        [Buffer.from("university"), Buffer.from(universityId)],
+        program.programId
+    );
+    const [clearancePDA] = PublicKey.findProgramAddressSync(
+        [Buffer.from("clearance"), universityPDA.toBuffer(), Buffer.from(studentId), Buffer.from(stageName)],
+        program.programId
+    );
+    const tx = await program.methods
+        .approveClearance(studentId, stageName, documentHash, staffId)
+        .accounts({
+            clearanceRecord: clearancePDA,
+            university: universityPDA,
+            authority: wallet.publicKey,
+            systemProgram: SystemProgram.programId,
+        })
+        .signers([keypair])
+        .rpc();
+    return { tx, clearancePDA: clearancePDA.toString() };
+};
 

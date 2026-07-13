@@ -13,6 +13,11 @@ class SuperAdmin {
     const res = await pool.query("SELECT * FROM users WHERE role = 'staff'");
     return res.rows;
   }
+  static async getAllCertificates() {
+    const res = await pool.query("SELECT * FROM certificates");
+    return res.rows;
+  }
+  static async 
 }
 
 export default SuperAdmin;

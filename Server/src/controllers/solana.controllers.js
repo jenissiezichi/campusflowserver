@@ -51,7 +51,7 @@ export const fetchAllUniversity = async (req, res) => {
         res.status(200).json({
             success: true,
             count: universities.length,
-            data: universities,
+            chain: universities,
             db: allUni,
         });
     } catch (err) {

@@ -1,6 +1,7 @@
 import crypto from 'crypto';
 import Document from "../models/document.model.js";
 import Clearance from "../models/Clearance.js";
+import Notification from "../models/Notification.js";
 
 export const uploadStudentDocument = async (req, res) => {
   try {
@@ -88,3 +89,38 @@ export const getClearanceStatus = async (req, res, next) => {
     })
   }
 }
+
+export const getMyNotifications = async (req, res) => {
+  try {
+    const matricNumber = req.user.matricNumber;
+    const universityId = req.user.universityId;
+    const notifications = await Notification.findByStudent(matricNumber, universityId);
+    res.json({ success: true, data: notifications });
+  } catch (error) {
+    res.status(500).json({ success: false, message: error?.message || "Failed to fetch notifications" });
+  }
+};
+
+export const markNotificationRead = async (req, res) => {
+  try {
+    const matricNumber = req.user.matricNumber;
+    const universityId = req.user.universityId;
+    const { id } = req.params;
+    const updated = await Notification.markAsRead(id, matricNumber, universityId);
+    res.json({ success: true, data: updated });
+  } catch (error) {
+    res.status(500).json({ success: false, message: error?.message || "Failed to update notification" });
+  }
+};
+
+export const markAllNotificationsRead = async (req, res) => {
+  try {
+    const matricNumber = req.user.matricNumber;
+    const universityId = req.user.universityId;
+    await Notification.markAllAsRead(matricNumber, universityId);
+    res.json({ success: true });
+  } catch (error) {
+    res.status(500).json({ success: false, message: error?.message || "Failed to update notifications" });
+  }
+};
+

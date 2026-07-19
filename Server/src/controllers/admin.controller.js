@@ -2,6 +2,7 @@ import Admin from '../models/admin.model.js';
 import Certificate from '../models/Certificate.js';
 import Clearance from "../models/Clearance.js";
 import { approveClearance } from '../services/solanaService.js';
+import Notification from "../models/Notification.js";
 
 export const createCertificate = async (req, res) => {
   try {
@@ -100,6 +101,17 @@ export const approveClearanceController = async (req, res) => {
       pdaAddress: chainResult.clearancePDA,
     });
 
+    try {
+      await Notification.create({
+        matricNumber: record.matric_number,
+        universityId: record.university_id,
+        title: "Clearance Approved",
+        message: `Your ${record.stage_name} clearance has been approved.`,
+      });
+    } catch (notifErr) {
+      console.error("Notification creation failed (non-blocking):", notifErr.message);
+    }
+
     res.status(200).json({
       success: true,
       message: "Clearance approved successfully.",
@@ -128,6 +140,17 @@ export const rejectClearanceController = async (req, res) => {
       staffId: req.user.id.toString(),
       staffUserId: req.user.id,
     });
+
+    try {
+      await Notification.create({
+        matricNumber: record.matric_number,
+        universityId: record.university_id,
+        title: "Clearance Rejected",
+        message: `Your ${record.stage_name} clearance was rejected. Please review and resubmit your documents.`,
+      });
+    } catch (notifErr) {
+      console.error("Notification creation failed (non-blocking):", notifErr.message);
+    }
 
     res.status(200).json({
       success: true,

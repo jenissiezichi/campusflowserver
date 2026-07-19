@@ -1,5 +1,5 @@
 import { getAllUniversities, getOnChainCertificate, registerUniversity } from "../services/solanaService.js";
-
+import Notification from "../models/Notification.js";
 import crypto from 'crypto';
 import { wallet } from '../configs/solana.js';
 import Certificate from '../models/Certificate.js';
@@ -172,9 +172,20 @@ export const createCertificate = async (req, res) => {
             universityId,
             certificateUrl,
             timestamp,
-            txSignature: chainResult.tx,
+            txSignature:chainResult.tx,
             pdaAddress: chainResult.certificatePDA,
         });
+
+        try {
+            await Notification.create({
+                matricNumber,
+                universityId,
+                title: "Certificate Issued",
+                message: `Your ${certificateType} certificate has been issued and verified on-chain.`,
+            });
+        } catch (notifErr) {
+            console.error("Notification creation failed (non-blocking):", notifErr.message);
+        }
 
         res.status(201).json({
             success: true,
@@ -209,8 +220,8 @@ export const getAllCertificate = async (req, res) => {
 
 export const getCertificateById = async (req, res) => {
     try {
-        const matric_number = req.user.matricNumber;   // ✅
-        const universityId = req.user.universityId;     // ✅
+        const matric_number = req.user.matricNumber;
+        const universityId = req.user.universityId;
         const cert = await Certificate.getCertificateByMatric(matric_number, universityId);
 
         let onChain = null;

@@ -10,7 +10,6 @@ try {
     console.error("FATAL IMPORT ERROR:", err);
     throw err;
 }
-
 // app.listen(PORT, () => {
 //     console.log(`Server is listening at PORT ${PORT}`);
 // })

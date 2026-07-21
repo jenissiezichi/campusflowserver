@@ -18,8 +18,13 @@ const isDev = process.env.NODE_ENV === 'development';
 
 app.use(globalRateLimiter);
 
+const allowedOrigins = [
+  'https://campusflow-mmt9.onrender.com',
+  'http://localhost:5173',
+];
+
 app.use(cors({
-  origin: isDev ? '*' : process.env.FRONTEND_URL,
+  origin: allowedOrigins,
   methods: ['GET', 'POST', 'PATCH', 'PUT', 'DELETE', 'OPTIONS'],
   allowedHeaders: ['Content-Type', 'Authorization']
 }));
